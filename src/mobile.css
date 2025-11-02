@@ -1,0 +1,432 @@
+/* =============== 기본 리셋 =============== */
+* {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, system-ui, Segoe UI, Roboto, Noto Sans, sans-serif;
+  background: #fff;
+}
+
+
+/* =============== 중앙정렬 레이아웃 (모든 화면 공통) =============== */
+.appShell {
+  display: grid;
+  grid-template-columns: 1fr min(100%, 420px) 1fr;
+  /* 중앙 열만 앱이 차지 */
+  min-height: 100svh;
+  background: #fff;
+}
+
+/* 각 페이지 루트 컨테이너 */
+.screen {
+  grid-column: 2;
+  /* 가운데 열만 차지 */
+  width: 100%;
+  max-width: 420px;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 24px 20px 32px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+@supports (height: 100svh) {
+  .screen {
+    min-height: 100svh;
+  }
+}
+
+/* iOS safe area 대응 */
+@supports (padding: max(0px)) {
+  .screen {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+}
+
+
+/* =============== 공통 UI 구성요소 =============== */
+.centerCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.h1 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin: 0 0 8px;
+}
+
+.sub {
+  color: #444;
+  margin-top: -10px;
+}
+
+
+/* 버튼 공통 스타일 */
+.primaryBtn,
+.ghostBtn,
+.googleBtn {
+  width: 100%;
+  max-width: 100%;
+  height: 56px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* 개별 버튼 스타일 */
+.primaryBtn {
+  border: 0;
+  background: #5b7cfa;
+  color: #fff;
+}
+
+.ghostBtn {
+  background: transparent;
+  border: 2px solid #e5e7eb;
+  color: #111;
+}
+
+.googleBtn {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  gap: 10px;
+}
+
+/* 하단 고정 영역 */
+.stickyBottom {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0));
+  backdrop-filter: saturate(140%) blur(2px);
+  box-sizing: border-box;
+}
+
+
+/* =============== 진행바 (옵션) =============== */
+.progressWrap {
+  height: 8px;
+  background: #eef2ff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  width: 0%;
+  background: #9db3ff;
+  transition: width 0.3s ease;
+}
+
+/* ====== Home (상단 고정/카드/리스트/하단 탭) ====== */
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #fff;
+  padding: 8px 0 12px;
+
+  /* 중앙 정렬 추가 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logoImg {
+  height: 50px;
+  /* 필요하면 조정 */
+  width: auto;
+  user-select: none;
+}
+
+.helloTitle {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.helloSub {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* 섹션 타이틀 */
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 10px 0 10px;
+}
+
+/* 카드 */
+.homeCard {
+  width: 100%;
+  border: 0;
+  text-align: left;
+  padding: 22px 22px;
+  border-radius: 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  margin: 6px 0 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.homeCard:hover {
+  transform: translateY(-2px);
+}
+
+.tintIndigo {
+  background: #7FA9F2;
+  color: #111;
+}
+
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.tintSlate {
+  background: #7FA9F2;
+}
+
+.cardBadge {
+  display: inline-block;
+  /* padding: 6px 10px;
+  border-radius: 999px; */
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  /* border: 1px solid rgba(148, 163, 184, 0.5); */
+  margin-bottom: 2px;
+}
+
+.tintSlate .cardBadge {
+  color: #fff;
+}
+
+.cardStrong {
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.cardEmoji {
+  font-size: 48px;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.15));
+}
+
+/* 리스트 카드 래퍼 */
+.listCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  padding: 6px 0;
+}
+
+/* 리스트 아이템 */
+.listItem {
+  display: grid;
+  grid-template-columns: 48px 1fr 16px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+}
+
+.listIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  background: #f4f7ff;
+  border-radius: 12px;
+}
+
+.listTexts {
+  display: grid;
+  gap: 4px;
+}
+
+.listTitle {
+  font-weight: 800;
+}
+
+.listDesc {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.listChevron {
+  font-size: 24px;
+  color: #cbd5e1;
+  margin-left: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: #eef2ff;
+  margin: 2px 0;
+}
+
+/* 하단 탭 */
+.bottomNav {
+  position: sticky;
+  bottom: 0;
+  margin-top: 24px;
+  padding-top: 8px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+  backdrop-filter: saturate(140%) blur(2px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.navBtn {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+}
+
+.navBtnActive {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #1e3a8a;
+}
+
+.navIcon {
+  font-size: 18px;
+}
+
+/* ====== 오늘의 기사: 카테고리 선택 ====== */
+.pageHeader {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 12px;
+  background: #fff;
+}
+
+.iconBtn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  color: #111;
+}
+
+.pageTitle {
+  text-align: center;
+  font-weight: 800;
+}
+
+.accentBlue { color: #2563eb; }
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+/* 타일 카드 */
+.categoryCard {
+  width: 100%;
+  border-radius: 16px;
+  padding: 20px 10px 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.categoryCard.active {
+  border-color: #7aa2ff;
+  background: radial-gradient(120% 120% at 50% 0%, #e8eeff 0%, #ffffff 60%);
+  box-shadow: 0 14px 30px rgba(59,130,246,0.18);
+}
+
+.catImg {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  transition: filter 0.18s ease;
+}
+
+/* 회색/컬러 전환 – graySrc가 없을 때 사용 */
+.catImg.showGray { filter: grayscale(1) contrast(0.9) opacity(0.9); }
+.catImg.showColor { filter: none; }
+
+.catLabel {
+  font-weight: 800;
+  color: #6b7280;
+  white-space: pre-line; /* 라벨에 \n 허용 */
+}
+.catLabel.active { color: #2563eb; }
