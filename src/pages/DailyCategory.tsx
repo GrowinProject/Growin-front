@@ -38,7 +38,7 @@ export default function DailyCategory() {
   const onDone = () => {
     if (!selected) return;
     localStorage.setItem("daily_category", selected);
-    nav("/home");
+    nav("/loading");
   };
 
   return (

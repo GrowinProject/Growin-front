@@ -18,7 +18,7 @@ body,
   width: 100%;
   height: 100%;
   overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
+  /* -webkit-text-size-adjust: 100%; */
 }
 
 body {
@@ -32,8 +32,7 @@ body {
 .appShell {
   display: grid;
   grid-template-columns: 1fr min(100%, 420px) 1fr;
-  /* 중앙 열만 앱이 차지 */
-  min-height: 100svh;
+  min-height: 100%;  
   background: #fff;
 }
 
@@ -43,7 +42,7 @@ body {
   /* 가운데 열만 차지 */
   width: 100%;
   max-width: 420px;
-  min-height: 100svh;
+  /* min-height: 100svh; */
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -53,11 +52,11 @@ body {
   box-sizing: border-box;
 }
 
-@supports (height: 100svh) {
+/* @supports (height: 100svh) {
   .screen {
     min-height: 100svh;
   }
-}
+} */
 
 /* iOS safe area 대응 */
 @supports (padding: max(0px)) {
@@ -119,7 +118,7 @@ body {
 
 .ghostBtn {
   background: transparent;
-  border: 2px solid #e5e7eb;
+  border: 1px solid #e5e7eb;
   color: #111;
 }
 
@@ -175,7 +174,7 @@ body {
 }
 
 .logoImg {
-  height: 50px;
+  height: 70px;
   /* 필요하면 조정 */
   width: auto;
   user-select: none;
@@ -430,3 +429,194 @@ body {
   white-space: pre-line; /* 라벨에 \n 허용 */
 }
 .catLabel.active { color: #2563eb; }
+
+/* 로딩 애니메이션 */
+.loader {
+  width: 64px;
+  height: 64px;
+  border: 6px solid #e5e7eb;
+  border-top-color: #5b7cfa;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ===== Article page ===== */
+.articleWrap { width: 100%; }
+
+.articleTitle {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.4px;
+  margin: 6px 0 10px;
+}
+
+.articleMeta {
+  display: flex;
+  gap: 6px;
+  color: #6b7280;
+}
+
+.articleImageWrap {
+  margin: 12px 0 16px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.articleImage {
+  width: 100%;
+  display: block;
+  border-radius: 14px;
+}
+
+.articleBody { margin-top: 2px; }
+.articleP {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #111827;
+  margin: 14px 0;
+}
+
+/* 키워드 하이라이트 */
+.kw {
+  background: #fff59d;      /* 노란 마커 */
+  padding: 0 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: #eab308;
+  text-underline-offset: 2px;
+}
+
+/* 팝업 말풍선 */
+.kwTip {
+  position: fixed;
+  max-width: min(86vw, 420px);
+  background: #111827;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  z-index: 9999;
+  transform: translate(-50%, calc(-100% - 10px));
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ===== SignUp page ===== */
+.signScreen { padding-top: 36px; }
+.signupTitle {
+  font-size: 28px;
+  font-weight: 800;
+  margin:0 0 50px;
+  margin-top: 10px;
+}
+
+.field { margin-bottom: 0px; }
+.label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0px;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.input {
+  width: 100%;
+  height: 52px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 0px 16px;
+  gap: 10px;
+  font-size: 16px;
+  background: #fafafa;
+  outline: none;
+}
+.input:focus { border-color: #c7d2fe; background: #fff; }
+.input.ok { border-color: #86efac; background: #fff; }
+.input.err { border-color: #fca5a5; background: #fff; }
+
+.miniBtn {
+  height: 52px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 0;
+  font-weight: 700;
+  background: #d1d5db;
+  color: #111;
+}
+.miniBtn:disabled { opacity: .6; }
+
+.hintRow {
+  margin-top: -1px;
+  margin-left: 5px;
+  font-size: 12px;
+  display: flex; align-items: center; flex-wrap: wrap;
+  color: #6b7280;
+  gap: 4px;
+}
+.subtle { color: #6b7280; }
+.okText { color: #16a34a; }
+.errText { color: #dc2626; }
+
+/* ===== 폼 기본 간격 ===== */
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.label {
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0 14px;
+  font-size: 16px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #9db3ff;
+  background: #fff;
+}
+
+/* 입력 상태 표시 (선택사항) */
+.input.ok {
+  border-color: #86efac; /* 초록 */
+  background: #fff;
+}
+.input.err {
+  border-color: #fda4af; /* 빨강 */
+  background: #fff;
+}
+
+.errText {
+  font-size: 12px;
+  color: #ef4444;
+}

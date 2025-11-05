@@ -13,15 +13,12 @@ export default function Login() {
                 <p className="sub">매일 조금씩 성장하는 나</p>
             </div>
 
-            <div className="stickyBottom">
-                <button className="googleBtn" onClick={handleGoogleLogin}>
-                    <img
-                        alt="G"
-                        width={18}
-                        height={18}
-                        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                    />
-                    구글 계정으로 로그인
+            <div className="stickyBottom" style={{ marginTop: 24 }}>
+                <button className="ghostBtn" onClick={() => navigate("/sign-up")}>
+                    회원가입
+                </button>
+                <button className="primaryBtn" onClick={() => navigate("/sign-in")}>
+                    로그인
                 </button>
             </div>
         </div>
