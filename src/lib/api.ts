@@ -36,21 +36,38 @@ export type LoginPayload = {
     };
   };
 
+// api.ts (signup만 예시)
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = (await res.json()) as SignupResponse;
-
-  if (!res.ok) {
-    // 서버가 에러시에도 JSON 형태로 message를 주지 않으면 대비
-    throw new Error(data?.message || `회원가입 실패 (HTTP ${res.status})`);
+    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    });
+  
+    const ct = res.headers.get("content-type") || "";
+    const isJson = ct.includes("application/json");
+  
+    // 성공 케이스
+    if (res.ok) {
+      if (isJson) return (await res.json()) as SignupResponse;
+      // 혹시 성공인데 본문이 비거나 JSON이 아니면 기본 메시지로 반환
+      return {
+        message: "SUCCESS",
+        statusCode: res.status,
+        data: { user_id: 0, username: payload.username, email: payload.email },
+      };
+    }
+  
+    // 에러 케이스: JSON/텍스트 모두 안전 처리
+    let serverMsg = "";
+    try {
+      serverMsg = isJson ? (await res.json())?.message : await res.text();
+    } catch {
+      /* 파싱 실패는 무시하고 아래에서 상태코드로 메시지 구성 */
+    }
+    throw new Error(serverMsg?.trim() || `회원가입 실패 (HTTP ${res.status})`);
   }
-  return data;
-}
+  
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {

@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signup } from "../lib/api"; // ✅ 추가
+import { signup } from "../lib/api"; // ✅ 실제 API 함수
 import "../mobile.css";
 
 type DupStatus = "idle" | "checking" | "ok" | "dup" | "error";
 
 export default function SignUp() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [dup, setDup] = useState<DupStatus>("idle");
@@ -23,7 +23,7 @@ export default function SignUp() {
   const pwSame = pw && pw2 && pw === pw2;
   const nickOk = nick.trim().length >= 4;
 
-  // 이메일 중복확인 (더미)
+  // 이메일 중복확인 (더미) — 실제 API 있으면 교체
   const checkDup = async () => {
     if (!emailOk) return;
     try {
@@ -36,8 +36,7 @@ export default function SignUp() {
     }
   };
 
-  const canSubmit =
-    emailOk && dup === "ok" && pwOk && pwSame && nickOk;
+  const canSubmit = emailOk && dup === "ok" && pwOk && pwSame && nickOk;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,18 +49,18 @@ export default function SignUp() {
       // 백엔드 스펙: { username, email, password }
       const res = await signup({ username: nick, email, password: pw });
 
-      // 성공 메시지 노출 (예: "SUCCESS", 201, user_id 등)
-      setServerMsg(`✅ ${res.message} (user_id: ${res.data.user_id})`);
+      // 서버 메시지가 있다면 표시(없어도 OK)
+      if (res?.message) {
+        setServerMsg(`✅ ${res.message}${res?.data?.user_id ? ` (user_id: ${res.data.user_id})` : ""}`);
+      }
 
-      // 필요 시 바로 이동
-      nav("/login", { replace: true });
+      // ✅ 성공 시 여기서 라우팅 (버튼 onClick으로 라우팅 X)
+      navigate("/sign-in", { replace: true });
     } catch (err: any) {
-      // 에러 메시지 표시
       setServerMsg(`❌ ${err?.message ?? "회원가입에 실패했습니다."}`);
     } finally {
       setSubmitting(false);
     }
-
   };
 
   const onEmailChange = (v: string) => {
@@ -132,6 +131,7 @@ export default function SignUp() {
             value={pw2}
             onChange={(e) => setPw2(e.target.value)}
             required
+            style={{ marginTop: 12 }}
           />
           <div className="hintRow">
             {!pw ? (
@@ -171,11 +171,26 @@ export default function SignUp() {
           </div>
         </div>
 
+        {/* 서버 메시지 */}
+        {serverMsg && (
+          <div
+            style={{
+              marginTop: 8,
+              color: serverMsg.startsWith("✅") ? "#16a34a" : "#dc2626",
+              fontSize: 14,
+            }}
+          >
+            {serverMsg}
+          </div>
+        )}
+
         <div className="stickyBottom">
-          <button className="primaryBtn" 
-          type="submit" 
-          style={{marginTop:40}}
-          disabled={!canSubmit || submitting}>
+          <button
+            className="primaryBtn"
+            type="submit"
+            style={{ marginTop: 40 }}
+            disabled={!canSubmit || submitting}
+          >
             {submitting ? "가입 중…" : "회원가입"}
           </button>
         </div>

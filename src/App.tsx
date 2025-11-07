@@ -9,6 +9,7 @@ import LoadingPage from "./pages/LoadingPage";
 import ArticleRead from "./pages/ArticleRead";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
+import SignupPage from "./pages/SignupPage";
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
         <Route path="/daily" element={<DailyCategory />} />
         <Route path="/loading" element={<LoadingPage />} />
         <Route path="/article" element={<ArticleRead />} />
-        {/* <Route path="/signup-page" element={<SignupPage />} /> */}
+        <Route path="/signup-page" element={<SignupPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>
