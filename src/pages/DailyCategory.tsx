@@ -17,18 +17,27 @@ import science_gray from "../imgs/science_gray.png";
 
 type Cat = {
   id: string;
+  slug: string; 
   label: string;
   colorSrc: string;
   graySrc: string;
 };
 
+const CATS = [
+  { slug: "politics", name: "정치" },
+  { slug: "business", name: "비즈니스" },
+  { slug: "tech", name: "테크" },
+  { slug: "sports", name: "스포츠" },
+];
+
+
 const CATEGORIES: Cat[] = [
-  { id: "politics", label: "정치", colorSrc: politics_color, graySrc: politics_gray },
-  { id: "economy", label: "경제", colorSrc: economy_color, graySrc: economy_gray },
-  { id: "society", label: "사회·국제", colorSrc: society_color, graySrc: society_gray },
-  { id: "sports", label: "스포츠", colorSrc: sports_color, graySrc: sports_gray },
-  { id: "culture", label: "문화·연예·\n라이프스타일", colorSrc: culture_color, graySrc: culture_gray },
-  { id: "science", label: "과학·기술", colorSrc: science_color, graySrc: science_gray },
+  { id: "politics", slug: "politics", label: "정치", colorSrc: politics_color, graySrc: politics_gray },
+  { id: "economy", slug: "economy", label: "경제", colorSrc: economy_color, graySrc: economy_gray },
+  { id: "society", slug: "society", label: "사회·국제", colorSrc: society_color, graySrc: society_gray },
+  { id: "sports", slug: "sports", label: "스포츠", colorSrc: sports_color, graySrc: sports_gray },
+  { id: "culture", slug: "culture", label: "문화·연예·\n라이프스타일", colorSrc: culture_color, graySrc: culture_gray },
+  { id: "science", slug: "science", label: "과학·기술", colorSrc: science_color, graySrc: science_gray },
 ];
 
 export default function DailyCategory() {
@@ -37,8 +46,7 @@ export default function DailyCategory() {
 
   const onDone = () => {
     if (!selected) return;
-    localStorage.setItem("daily_category", selected);
-    nav("/loading");
+    nav("/loading", { state: { categorySlug: selected } });
   };
 
   return (

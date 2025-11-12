@@ -1,18 +1,33 @@
-import React, { useEffect } from "react";
-import "../mobile.css"; // 스타일 통합
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { fetchRandomArticle } from "../lib/api";
 
 export default function LoadingPage() {
-  const navigate = useNavigate();
+  const nav = useNavigate();
+  const loc = useLocation() as { state?: { categorySlug?: string } };
+  const slug = loc.state?.categorySlug;
 
-  // 1초 뒤 ArticleRead 페이지로 이동
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate("/article"); // ArticleRead가 연결된 경로
+    if (!slug) {
+      nav("/daily", { replace: true });
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetchRandomArticle(slug);
+        // 세션 스토리지에도 백업 (새로고침 대비)
+        sessionStorage.setItem("current_article", JSON.stringify(res.data));
+        nav("/article", { replace: true, state: { data: res.data } });
+      } catch (e: any) {
+        console.error(e);
+        alert("기사를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+        nav("/daily", { replace: true });
+      }
     }, 1000);
 
-    return () => clearTimeout(timer); // 컴포넌트 언마운트 시 타이머 해제
-  }, [navigate]);
+    return () => clearTimeout(timer);
+  }, [slug, nav]);
 
   return (
     <div className="screen centerCol">

@@ -1,4 +1,5 @@
-const API_BASE_URL = "https://growin-back.onrender.com";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "https://growin-back.onrender.com";
 
 export type SignupPayload = {
   username: string;
@@ -84,9 +85,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     return data;
   }
 
-  function getAccessToken(): string | null {
-    return localStorage.getItem("access_token");
-  }
+  const getAccessToken = () => localStorage.getItem("access_token");
 
 
 export type UpdateLevelPayload = {
@@ -136,4 +135,100 @@ export async function updateUserLevel(payload: UpdateLevelPayload): Promise<Upda
     throw new Error(txt || `HTTP_${r.status}`);
   }
   return r.json();
+}
+
+export type Keyword = { word: string; translation_ko: string };
+export type Article = {
+  id: number;
+  title: string;
+  content: string;
+  image_url?: string;
+  published_at?: string;
+  created_at?: string;
+};
+export type Category = { id: number; name: string; slug: string };
+
+export type RandomArticleResponse = {
+  message: string;              // "SUCCESS"
+  statusCode: number;           // 200
+  data: {
+    article: Article;
+    category: Category;
+    keywords: Keyword[];
+  };
+};
+
+// ✅ 카테고리별 랜덤 기사 (slug 사용: e.g. politics)
+export async function fetchRandomArticle(categorySlug: string) {
+  const url = new URL(`${API_BASE_URL}/articles/random`);
+  url.searchParams.set("category", categorySlug);
+
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = getAccessToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(url.toString(), { method: "GET", headers });
+  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  return res.json();
+}
+
+// src/lib/api.ts
+export type SummaryAPIResponse = {
+  message: string;
+  statusCode: number;
+  data: {
+    article_id: number;
+    summary_id: number;
+    summary_text: string;
+    reading_level: number;
+    keywords: { word: string; translation_ko: string }[];
+    // ✅ 새로 추가
+    article_image_url: string;
+    article_published_at: string;
+  };
+};
+
+
+export async function fetchArticleSummary(
+  category: string,
+  articleId: number,
+  level: number
+) {
+  const token = getAccessToken();
+  if (!token) throw new Error("로그인이 필요합니다. (토큰 없음)");
+
+  const url = `${API_BASE_URL}/articles/${articleId}/summary` +
+  `?category_slug=${encodeURIComponent(category)}` +
+  `&reading_level=${level}`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,   // ✅ 토큰 포함
+      Accept: "application/json",
+    },
+    credentials: "include", // 필요 없으면 제거 가능
+  });
+
+  if (res.status === 401) throw new Error("인증 만료(401): 다시 로그인해주세요.");
+  if (!res.ok) throw new Error(`요약 불러오기 실패 (${res.status})`);
+
+  const json = (await res.json()) as SummaryAPIResponse;
+  if (json.statusCode !== 200 || !json.data) {
+    throw new Error("요약 데이터를 찾을 수 없습니다.");
+  }
+
+// src/lib/api.ts
+const d = json.data;
+return {
+  articleId: d.article_id,
+  summaryId: d.summary_id,
+  summaryText: d.summary_text,
+  readingLevel: d.reading_level,
+  keywords: d.keywords,
+  articleImageUrl: d.article_image_url,       // ✅ 새 필드
+  articlePublishedAt: d.article_published_at, // ✅ 새 필드
+  category, // 그대로 유지
+};
+
 }
