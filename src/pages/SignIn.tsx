@@ -22,26 +22,31 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-
+  
     setSubmitting(true);
     setServerMsg("");
-
+  
     try {
       const res = await login({ email, password: pw });
-
-      // 토큰/유저 저장
+  
+      // 토큰 저장
       localStorage.setItem("access_token", res.data.access_token);
-      localStorage.setItem("refresh_token", res.data.refresh_token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
+      if (res.data.refresh_token) {
+        localStorage.setItem("refresh_token", res.data.refresh_token);
+      }
+  
+      // 로그인 응답에 포함된 유저 정보 사용
+      const user = res.data.user;
+      localStorage.setItem("user", JSON.stringify(user));
+  
       setServerMsg("✅ 로그인 성공");
-
-      // 레벨 0이면 최초 사용자 → 레벨 테스트로 보내기
-      if (res.data.user.level === 0) {
+  
+      // ✅ 레벨 분기
+      if (user.level === 0) {
         navigate("/level-test", { replace: true });
       } else {
-        // 그 외는 홈(또는 대시보드)로
-        navigate("/", { replace: true });
+        localStorage.setItem("level_done", "1"); // 다음 로그인부터 스킵
+        navigate("/home", { replace: true });
       }
     } catch (err: any) {
       setServerMsg(`❌ ${err?.message ?? "로그인에 실패했습니다."}`);
@@ -49,6 +54,7 @@ export default function Login() {
       setSubmitting(false);
     }
   };
+  
 
   return (
     <div className="screen">

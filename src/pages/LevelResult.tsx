@@ -1,102 +1,173 @@
 // src/pages/LevelResult.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { updateUserLevel } from "../lib/api";
 import { LEVEL_QUESTIONS } from "../data/levelQuestions";
 
-type SavedAnswer = { questionId: string; choiceId: string | null };
+/* ---------- 타입 ---------- */
+type Answer = { questionId: string; choiceId: string | null };
 
-export default function LevelResult() {
-  const navigate = useNavigate();
-  const [answers, setAnswers] = useState<SavedAnswer[]>([]);
+type ResultPayload = {
+  answers: Answer[];
+  result: { score: number; maxScore: number; percent: number; level: 1 | 2 | 3 };
+};
 
-  // 로컬 저장값 불러오기
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("level_answers");
-      if (raw) setAnswers(JSON.parse(raw));
-    } catch {}
-  }, []);
+/* ---------- 로컬 저장 헬퍼 ---------- */
+function getLocalResult(): ResultPayload | null {
+  try {
+    const raw = localStorage.getItem("level_result");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
 
-  // qid -> choiceId 매핑
-  const answerMap = useMemo(() => {
-    const m = new Map<string, string | null>();
-    answers.forEach(a => m.set(a.questionId, a.choiceId ?? null));
-    return m;
-  }, [answers]);
+function getUser(): any | null {
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
 
-  // 점수 계산
-  const { correctCount } = useMemo(() => {
-    let ok = 0;
-    for (const q of LEVEL_QUESTIONS) {
-      const picked = answerMap.get(q.id);
-      if (picked && picked === q.correctId) ok++;
-    }
-    return { correctCount: ok };
-  }, [answerMap]);
-
-  const percent = Math.round((correctCount / LEVEL_QUESTIONS.length) * 100);
-
-  // 배지/버튼 스타일
-  const chip = (text: string, bg: string, color: string, border: string) => (
+/* ---------- UI 헬퍼 ---------- */
+function chip(label: string, bg: string, text: string, border: string) {
+  return (
     <span
       style={{
-        display: "inline-block",
-        padding: "4px 10px",
-        borderRadius: 999,
         fontSize: 12,
         fontWeight: 700,
+        padding: "6px 10px",
+        borderRadius: 999,
         background: bg,
-        color,
+        color: text,
         border: `1px solid ${border}`,
       }}
     >
-      {text}
+      {label}
     </span>
   );
+}
 
-  // 보기 스타일 결정
-  function choiceStyle(
-    variant: "neutral" | "correct" | "wrong" | "answer"
-  ): React.CSSProperties {
-    const base: React.CSSProperties = {
-      textAlign: "left",
-      padding: "14px 16px",
-      borderRadius: 12,
-      fontSize: 16,
-      fontWeight: 600,
-      border: "1px solid #e5e7eb",
-      background: "#fff",
-    };
-    if (variant === "correct") {
-      base.border = "2px solid #22c55e";
-      base.background = "#EAF8EF";
-      base.color = "#14532d";
-    } else if (variant === "wrong") {
-      base.border = "2px solid #ef4444";
-      base.background = "#FDECEC";
-      base.color = "#7f1d1d";
-    } else if (variant === "answer") {
-      base.border = "2px solid #3b82f6";
-      base.background = "#EFF6FF";
-      base.color = "#1e3a8a";
-    }
-    return base;
+type Variant = "neutral" | "correct" | "wrong" | "answer";
+function choiceStyle(variant: Variant) {
+  const base: React.CSSProperties = {
+    padding: "14px 16px",
+    borderRadius: 12,
+    fontSize: 16,
+    fontWeight: 600,
+    border: "1px solid #e5e7eb",
+    background: "#fff",
+  };
+
+  if (variant === "correct") {
+    return { ...base, background: "#EAF8EF", border: "1.5px solid #22c55e", boxShadow: "none" };
   }
+  if (variant === "wrong") {
+    return { ...base, background: "#FDECEC", border: "1.5px solid #ef4444", boxShadow: "none" };
+  }
+  if (variant === "answer") {
+    return { ...base, background: "#EEF6FF", border: "1.5px solid #60a5fa", boxShadow: "none" };
+  }
+  return base;
+}
+
+/* ---------- 페이지 ---------- */
+export default function LevelResult() {
+  const navigate = useNavigate();
+
+  const data = useMemo(() => getLocalResult(), []);
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const user = useMemo(() => getUser(), []);
+  const calledRef = useRef(false); // StrictMode에서 중복 PATCH 방지
+
+  // 결과가 없으면 다시 테스트로
+  useEffect(() => {
+    if (!data) navigate("/level-test", { replace: true });
+  }, [data, navigate]);
+
+  // 서버 PATCH: 항상 시도하고, 409도 성공처럼 처리 → 이후 로컬 동기화
+  useEffect(() => {
+    console.log("[LR] effect start");
+    console.log("[LR] data:", data);
+    console.log("[LR] user:", user);
+
+    if (!data) return;
+    if (!user || typeof user.user_id !== "number") {
+      console.warn("[LR] no user or invalid user_id");
+      setError("로그인 정보를 찾을 수 없어요. 다시 로그인해주세요.");
+      return;
+    }
+
+    // StrictMode 중복 호출 방지
+    if (calledRef.current) return;
+    calledRef.current = true;
+
+    console.log("[LR] calling updateUserLevel", { uid: user.user_id, lvl: data.result.level });
+
+    (async () => {
+      try {
+        setSaving(true);
+        await updateUserLevel({ user_id: user.user_id, level: data.result.level });
+        console.log("[LR] PATCH ok");
+        setSavedMsg("레벨 저장 완료!");
+      } catch (e: any) {
+        if (e?.message === "LEVEL_ALREADY_ASSIGNED" || e?.code === 409) {
+          // 이미 저장된 상태 → 성공 취급
+          setSavedMsg("이미 설정된 레벨입니다.");
+        } else {
+          setError(e?.message || "레벨 저장에 실패했어요.");
+          return; // 실패 시 아래 로컬 동기화는 건너뜀
+        }
+      } finally {
+        setSaving(false);
+      }
+
+      // 성공(200) 또는 409일 때만 로컬 user.level 동기화 + 다음부터 스킵
+      try {
+        const updated = { ...user, level: data.result.level };
+        localStorage.setItem("user", JSON.stringify(updated));
+        localStorage.setItem("level_done", "1");
+      } catch {}
+    })();
+  }, [data, user]);
+
+  if (!data) return null;
+
+  // 선택 답안 조회 맵
+  const answerMap = useMemo(() => {
+    const m = new Map<string, string | null>();
+    for (const a of data.answers) m.set(a.questionId, a.choiceId);
+    return m;
+  }, [data.answers]);
+
+  const { score, maxScore, percent, level } = data.result;
 
   return (
     <div className="screen">
-      {/* 헤더 요약 */}
-      <div style={{ marginBottom: 16 }}>
-        <h2 style={{ margin: "0 0 6px", fontSize: 24, letterSpacing: -0.3 }}>
-          레벨 테스트 결과
-        </h2>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          {chip(`정답 ${correctCount}/${LEVEL_QUESTIONS.length}`, "#EEF2FF", "#1e40af", "#c7d2fe")}
-          {chip(`${percent}%`, "#F1F5F9", "#0f172a", "#e2e8f0")}
+      {/* 상단 요약 */}
+      <div style={{ marginBottom: 12 }}>
+        <h2 style={{ margin: "0 0 8px", fontSize: 24, letterSpacing: -0.3 }}>레벨 테스트 결과</h2>
+        <div style={{ fontSize: 14, color: "#6b7280" }}>
+          점수 <b>{score}</b> / {maxScore} ({percent}%) ·{" "}
+          <b>{level === 1 ? "초급" : level === 2 ? "중급" : "고급"}</b> 레벨입니다.
+        </div>
+
+        {/* 저장 상태 메시지 */}
+        <div style={{ marginTop: 8, minHeight: 22 }}>
+          {saving && <span style={{ color: "#2563eb" }}>서버에 저장 중...</span>}
+          {!saving && savedMsg && <span style={{ color: "#16a34a" }}>✅ {savedMsg}</span>}
+          {!saving && error && <span style={{ color: "#ef4444" }}>❌ {error}</span>}
         </div>
       </div>
 
-      {/* 전체 6문항 렌더 */}
+      {/* 문제별 결과 카드 */}
       <div style={{ display: "grid", gap: 16 }}>
         {LEVEL_QUESTIONS.map((q, i) => {
           const picked = answerMap.get(q.id) ?? null;
@@ -113,11 +184,17 @@ export default function LevelResult() {
               }}
             >
               {/* 상단 타이틀 */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 6,
+                }}
+              >
                 <div style={{ fontSize: 14, color: "#6b7280" }}>
                   Question {String(i + 1).padStart(2, "0")} · {q.type}
                 </div>
-                {/* 맞/틀 배지 */}
                 {isCorrect
                   ? chip("정답", "#EAF8EF", "#14532d", "#22c55e")
                   : chip("오답", "#FDECEC", "#7f1d1d", "#ef4444")}
@@ -128,20 +205,16 @@ export default function LevelResult() {
                 {q.prompt}
               </div>
 
-              {/* 보 기 */}
+              {/* 보기 */}
               <div style={{ display: "grid", gap: 10 }}>
                 {q.choices.map((c) => {
-                  // 표시 규칙:
-                  // - 정답이면: 선택한 보기(=정답)만 초록(correct)
-                  // - 오답이면: 내가 고른 보기 빨강(wrong) + 정답 파랑(answer)
-                  let variant: "neutral" | "correct" | "wrong" | "answer" = "neutral";
+                  let variant: Variant = "neutral";
                   if (picked && picked === q.correctId) {
                     if (c.id === picked) variant = "correct";
                   } else {
                     if (picked && c.id === picked) variant = "wrong";
                     if (c.id === q.correctId) variant = "answer";
                   }
-
                   return (
                     <div key={c.id} style={choiceStyle(variant)}>
                       {c.text}
@@ -156,9 +229,9 @@ export default function LevelResult() {
 
       {/* 하단 버튼 */}
       <div className="stickyBottom" style={{ marginTop: 24 }}>
-        <button className="ghostBtn" onClick={() => navigate("/level-test")}>
+        {/* <button className="ghostBtn" onClick={() => navigate("/level-test")}>
           다시 테스트하기
-        </button>
+        </button> */}
         <button className="primaryBtn" onClick={() => navigate("/home")}>
           홈으로
         </button>

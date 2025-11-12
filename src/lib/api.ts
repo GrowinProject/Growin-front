@@ -83,3 +83,57 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     }
     return data;
   }
+
+  function getAccessToken(): string | null {
+    return localStorage.getItem("access_token");
+  }
+
+
+export type UpdateLevelPayload = {
+  user_id: number;   // ⚠️ 토큰의 사용자와 일치해야 함(백엔드가 검증)
+  level: 1 | 2 | 3;  // 1=초급, 2=중급, 3=고급
+};
+
+export type UpdateLevelResponse = {
+  message: string;   // "LEVEL_UPDATED"
+  statusCode: number; // 200
+  data: {
+    user_id: number;
+    level: 1 | 2 | 3;
+  };
+};
+
+export async function updateUserLevel(payload: UpdateLevelPayload): Promise<UpdateLevelResponse> {
+  const token = getAccessToken();
+  // 콘솔 확인용
+  console.log("[API] updateUserLevel called:", {
+    url: `${API_BASE_URL}/users/level`,
+    payload,
+    hasToken: !!token,
+    tokenPreview: token?.slice(0, 12) + "...",
+  }); // 👈 호출 여부/URL/토큰 유무 확인
+
+  if (!token) throw new Error("NO_TOKEN");
+
+  const r = await fetch(`${API_BASE_URL}/users/level`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // ← 공백 1칸 필수
+    },
+    body: JSON.stringify(payload),
+  });
+
+  // 409를 특별 처리(이미 설정됨 → 성공처럼)
+  if (r.status === 409) {
+    const j = await r.json().catch(() => ({}));
+    const e: any = new Error(j?.message || "LEVEL_ALREADY_ASSIGNED");
+    e.code = 409;
+    throw e;
+  }
+  if (!r.ok) {
+    const txt = await r.text().catch(() => "");
+    throw new Error(txt || `HTTP_${r.status}`);
+  }
+  return r.json();
+}

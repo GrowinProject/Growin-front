@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
 import LevelTest from "./pages/LevelTest";
 import LevelComplete from "./pages/LevelComplete";
 import LevelResult from "./pages/LevelResult";

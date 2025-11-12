@@ -6,13 +6,26 @@ import logoUrl from "../assets/growin-logo.png"; // ← 이미지 모듈로 임�
 export default function Home() {
   const nav = useNavigate();
 
-  // 임시로 사용자 이름/아이디 표시 (원하면 로그인 시 localStorage에 저장)
   const userLabel = useMemo(() => {
-    const name = localStorage.getItem("user_name");
-    const email = localStorage.getItem("user_email");
-    if (name) return `${name}님`;
-    if (email) return `${email.split("@")[0]}님`;
-    return "사용자님";
+    try {
+      // ✅ localStorage에서 user 객체를 가져옴
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        const user = JSON.parse(raw);
+        // username이 있으면 "혜주님" 형태로 반환
+        if (user?.username) return `${user.username}님`;
+      }
+  
+      // fallback: 이전 방식 (이메일이나 이름 따로 저장돼 있을 때)
+      const name = localStorage.getItem("user_name");
+      const email = localStorage.getItem("user_email");
+      if (name) return `${name}님`;
+      if (email) return `${email.split("@")[0]}님`;
+  
+      return "사용자님";
+    } catch {
+      return "사용자님";
+    }
   }, []);
 
   return (

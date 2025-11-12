@@ -3,7 +3,48 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEVEL_QUESTIONS } from "../data/levelQuestions";
 
+// levelQuestions.ts에 Difficulty가 있다면 타입 가져와서 써도 되고,
+// 여기서는 문자열 union 그대로 사용
 type Answer = { questionId: string; choiceId: string | null };
+
+// ✅ 난이도별 가중치 (필요시 자유롭게 조정 가능)
+const WEIGHT: Record<"beginner" | "intermediate" | "advanced", number> = {
+  beginner: 1,
+  intermediate: 2,
+  advanced: 3,
+};
+
+// ✅ 점수 계산: 정답이면 해당 문제 난이도 가중치만큼 득점
+function computeScore(answers: Answer[]) {
+  let score = 0;
+  let maxScore = 0;
+
+  for (const q of LEVEL_QUESTIONS) {
+    const ans = answers.find((a) => a.questionId === q.id);
+    const w = WEIGHT[q.difficulty as keyof typeof WEIGHT] ?? 1;
+
+    // 최대점(분모)은 모든 문제 가중치 합
+    maxScore += w;
+
+    // 정답 체크
+    if (ans?.choiceId && q.correctId && ans.choiceId === q.correctId) {
+      score += w;
+    }
+  }
+
+  const percent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  return { score, maxScore, percent };
+}
+
+// ✅ 레벨 산출 규칙 (예시)
+// - 75% 이상: 고급(3)
+// - 40% 이상: 중급(2)
+// - 그 미만:  초급(1)
+function computeLevel(percent: number) {
+  if (percent >= 75) return 3;
+  if (percent >= 40) return 2;
+  return 1;
+}
 
 export default function LevelTest() {
   const navigate = useNavigate();
@@ -13,10 +54,7 @@ export default function LevelTest() {
   const [answers, setAnswers] = useState<Answer[]>([]);
 
   const q = LEVEL_QUESTIONS[idx];
-  const percent = useMemo(
-    () => Math.round((idx / total) * 100),
-    [idx, total]
-  );
+  const percent = useMemo(() => Math.round((idx / total) * 100), [idx, total]);
 
   function commit(choiceId: string | null) {
     const next = [...answers];
@@ -25,6 +63,25 @@ export default function LevelTest() {
     if (existing >= 0) next[existing] = { questionId: q.id, choiceId };
     else next.push({ questionId: q.id, choiceId });
     setAnswers(next);
+    return next; // ✅ 다음 단계에서 즉시 계산에 활용하려고 반환
+  }
+
+  function finalizeAndGo(nextAnswers: Answer[]) {
+    // ✅ 점수/레벨 계산
+    const { score, maxScore, percent } = computeScore(nextAnswers);
+    const level = computeLevel(percent);
+
+    // ✅ 로컬 저장 (결과 화면 및 이후 로직에서 사용)
+    const payload = {
+      answers: nextAnswers,
+      result: { score, maxScore, percent, level }, // level: 1|2|3
+    };
+    try {
+      localStorage.setItem("level_result", JSON.stringify(payload));
+    } catch {}
+
+    // ✅ 결과 페이지로 이동 (여기서는 아직 서버 PATCH 안 함)
+    navigate("/level-complete");
   }
 
   function handleChoice(choiceId: string) {
@@ -32,13 +89,10 @@ export default function LevelTest() {
   }
 
   function handleNext() {
-    commit(selected); // 선택 저장
+    const next = commit(selected); // 선택 저장
     if (idx + 1 >= total) {
-      // 결과 저장 후 완료 페이지로 이동
-      try {
-        localStorage.setItem("level_answers", JSON.stringify(answers.concat([{ questionId: q.id, choiceId: selected }])));
-      } catch {}
-      navigate("/level-complete");
+      // ✅ 마지막 문제면 결과 계산/저장
+      finalizeAndGo(next);
       return;
     }
     setIdx((i) => i + 1);
@@ -47,12 +101,9 @@ export default function LevelTest() {
 
   function handleSkip() {
     setSelected(null);
-    commit(null);
+    const next = commit(null);
     if (idx + 1 >= total) {
-      try {
-        localStorage.setItem("level_answers", JSON.stringify(answers.concat([{ questionId: q.id, choiceId: null }])));
-      } catch {}
-      navigate("/level-complete");
+      finalizeAndGo(next);
       return;
     }
     setIdx((i) => i + 1);
@@ -65,10 +116,16 @@ export default function LevelTest() {
         <h2 style={{ margin: "0 0 8px", fontSize: 24, letterSpacing: -0.3 }}>
           간단한 레벨 테스트를 진행할게요!
         </h2>
-        <div className="progressWrap">
+        <div className="progressWrap" style={{ height: 8, background: "#eef2f7", borderRadius: 999 }}>
           <div
             className="progressBar"
-            style={{ width: `${percent}%` }}
+            style={{
+              width: `${percent}%`,
+              height: 8,
+              background: "#5b7cfa",
+              borderRadius: 999,
+              transition: "width .25s ease",
+            }}
           />
         </div>
         <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
@@ -89,7 +146,7 @@ export default function LevelTest() {
         <div style={{ fontSize: 14, color: "#6b7280", marginBottom: 8 }}>
           Question {String(idx + 1).padStart(2, "0")} · {q.type}
         </div>
-        <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.4, whiteSpace: "pre-line" }}>
           {q.prompt}
         </div>
 
@@ -109,6 +166,7 @@ export default function LevelTest() {
                   background: active ? "#eef2ff" : "#fff",
                   fontSize: 16,
                   fontWeight: 600,
+                  cursor: "pointer",
                 }}
               >
                 {c.text}
@@ -119,16 +177,37 @@ export default function LevelTest() {
       </div>
 
       {/* 하단 버튼 */}
-      <div className="stickyBottom" style={{ marginTop: 24 }}>
+      <div className="stickyBottom" style={{ marginTop: 24, display: "flex", gap: 10 }}>
         <button
           className="primaryBtn"
           onClick={handleNext}
           disabled={selected === null}
-          style={{ opacity: selected === null ? 0.6 : 1 }}
+          style={{
+            opacity: selected === null ? 0.6 : 1,
+            padding: "12px 16px",
+            borderRadius: 12,
+            background: "#5b7cfa",
+            color: "#fff",
+            fontWeight: 700,
+            border: "none",
+            cursor: selected === null ? "not-allowed" : "pointer",
+          }}
         >
           다음으로
         </button>
-        <button className="ghostBtn" onClick={handleSkip}>
+        <button
+          className="ghostBtn"
+          onClick={handleSkip}
+          style={{
+            padding: "12px 16px",
+            borderRadius: 12,
+            background: "#fff",
+            color: "#374151",
+            fontWeight: 700,
+            border: "1px solid #e5e7eb",
+            cursor: "pointer",
+          }}
+        >
           Skip &gt;
         </button>
       </div>
