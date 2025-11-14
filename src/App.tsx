@@ -8,7 +8,6 @@ import LoadingPage from "./pages/LoadingPage";
 import ArticleRead from "./pages/ArticleRead";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
-import SignupPage from "./pages/SignupPage";
 import SummaryRead from "./pages/SummaryRead";
 
 function App() {

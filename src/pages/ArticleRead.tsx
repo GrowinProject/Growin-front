@@ -1,5 +1,5 @@
 // src/pages/ArticleRead.tsx
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { Article, Category, Keyword as ApiKeyword } from "../lib/api";
 import KeywordHighlighter from "../components/KeywordHighlighter";

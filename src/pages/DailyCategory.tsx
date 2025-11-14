@@ -23,14 +23,6 @@ type Cat = {
   graySrc: string;
 };
 
-const CATS = [
-  { slug: "politics", name: "정치" },
-  { slug: "business", name: "비즈니스" },
-  { slug: "tech", name: "테크" },
-  { slug: "sports", name: "스포츠" },
-];
-
-
 const CATEGORIES: Cat[] = [
   { id: "politics", slug: "politics", label: "정치", colorSrc: politics_color, graySrc: politics_gray },
   { id: "economy", slug: "economy", label: "경제", colorSrc: economy_color, graySrc: economy_gray },
