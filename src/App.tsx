@@ -9,6 +9,7 @@ import ArticleRead from "./pages/ArticleRead";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import SummaryRead from "./pages/SummaryRead";
+import SummaryQuizPage from "./pages/SummaryQuizPage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/article" element={<ArticleRead />} />
         {/* <Route path="/signup-page" element={<SignupPage />} /> */}
         <Route path="/summary/:category/:articleId/level/:level" element={<SummaryRead />} />
+        <Route path="/summary/:category/:articleId/level/:level/quiz/:summaryId" element={<SummaryQuizPage />}/>
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

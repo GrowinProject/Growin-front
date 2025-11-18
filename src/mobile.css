@@ -620,3 +620,209 @@ body {
   font-size: 12px;
   color: #ef4444;
 }
+
+/* 퀴즈 페이지 전체 */
+.quizPage {
+  padding: 16px;
+  padding-bottom: 80px; /* 하단 버튼 여유 */
+}
+
+/* 상단 헤더 */
+.quizHeader {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.quizBackBtn {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.quizBackBtn:hover {
+  color: #374151;
+}
+
+.quizHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quizTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.quizMeta {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.quizMeta span + span::before {
+  content: "·";
+  margin: 0 4px;
+}
+
+/* 레벨 배지 */
+.quizBadge {
+  padding: 10px 15px;
+  border-radius: 15px;
+  font-size: 15px;
+  font-weight: bold;
+  background: #eef3ff;
+  color: #2f6fed;
+}
+
+/* 진행도 영역 */
+.quizProgressSection {
+  margin-bottom: 16px;
+}
+
+.quizProgressTop {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.quizProgressBarWrap {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.quizProgressBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: #2f6fed;
+  transition: width 0.2s ease-out;
+}
+
+/* 공통 카드 */
+.quizCard {
+  max-width: 480px;
+  margin: 60px auto 0;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  font-size: 14px;
+}
+
+.quizError {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.quizErrorSub {
+  color: #ef4444;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* 문제 리스트 */
+.quizList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.quizItem {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 35px 25px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+/* 문제 헤더 */
+.quizQHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.quizQNumber {
+  font-size: 13px;
+  font-weight: bold;
+  color: #111827;
+}
+
+.quizQType {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* 문제 본문 */
+.quizPrompt {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+/* 보기 영역 */
+.quizOptions {
+  display: grid;
+  gap: 8px;
+}
+
+.quizOptionBtn {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 15px 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quizOptionBtn:hover {
+  border-color: #cbd5f5;
+  background: #f8f9ff;
+}
+
+.quizOptionBtnSelected {
+  border: 1.5px solid #2f6fed;
+  background: #e6f0ff;
+}
+
+.quizOptionLabel {
+  font-weight: 700;
+  color: #1f2937;
+  min-width: 20px;
+}
+
+.quizOptionText {
+  color: #111827;
+}
+
+/* secondary 버튼 (이미 있으면 생략 가능) */
+.secondaryBtn {
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  padding: 8px 14px;
+  background: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  color: #475569;
+}
+
+.secondaryBtn:hover {
+  background: #f8fafc;
+}

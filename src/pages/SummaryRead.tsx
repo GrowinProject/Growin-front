@@ -79,8 +79,13 @@ export default function SummaryRead() {
             <article className="articleWrap">
                 {/* 제목 */}
                 <h1 className="articleTitle" style={{ marginBottom: 10, marginTop: 20 }}>
-                    요약
+                {summary.articleTitle}
                 </h1>
+
+                {/* 카테고리, 기사id, 레벨 출력하려고할시 */}
+                {/* <span>카테고리 <b>{summary.category}</b></span>
+                <span>기사ID <b>{summary.articleId}</b></span>
+                <span>레벨 <b>{summary.readingLevel}</b></span> */}
 
                 {/* 카테고리/날짜 */}
                 <div
@@ -165,14 +170,28 @@ export default function SummaryRead() {
                 <button
                     type="button"
                     className="primaryBtn"
-                    onClick={() =>
-                        nav(`/article/${summary.category}/${summary.articleId}`)
-                    }
+                    disabled={!summary}
+                    onClick={() => {
+                        if (!summary) return;
+
+                        // ✅ summary는 camelCase 구조니까 summaryId로 접근
+                        const sid = summary.summaryId;
+
+                        if (!sid) {
+                            console.error("summaryId 없음:", summary);
+                            return;
+                        }
+
+                        // 현재 위치: /summary/:category/:articleId/level/:level
+                        // → 상대 경로로 quiz/:summaryId 로 이동
+                        nav(`quiz/${sid}`);
+                    }}
                 >
-                    원문 보기
+                    이 요약으로 퀴즈 풀기
                 </button>
+
             </div>
-        </div>
+        </div >
     );
 
 }

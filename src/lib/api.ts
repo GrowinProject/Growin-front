@@ -172,7 +172,6 @@ export async function fetchRandomArticle(categorySlug: string) {
   return res.json();
 }
 
-// src/lib/api.ts
 export type SummaryAPIResponse = {
   message: string;
   statusCode: number;
@@ -185,6 +184,7 @@ export type SummaryAPIResponse = {
     // ✅ 새로 추가
     article_image_url: string;
     article_published_at: string;
+    article_title: string;
   };
 };
 
@@ -228,7 +228,25 @@ return {
   keywords: d.keywords,
   articleImageUrl: d.article_image_url,       // ✅ 새 필드
   articlePublishedAt: d.article_published_at, // ✅ 새 필드
+  articleTitle: d.article_title,
   category, // 그대로 유지
 };
-
 }
+
+// 요약페이지 -> 문제페이지에서 문제 불러오는 api
+export async function fetchQuiz(summaryId: number) {
+  const token = localStorage.getItem("access_token"); // ⬅ 추가
+
+  const res = await fetch(`${API_BASE_URL}/summaries/${summaryId}/quiz`, {
+    headers: {
+      Authorization: `Bearer ${token}`, // ⬅ 여기 추가!
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`퀴즈 요청 실패 (HTTP ${res.status})`);
+  }
+
+  return res.json();
+}
+
