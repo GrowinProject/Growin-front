@@ -18,74 +18,74 @@ export type SignupResponse = {
 };
 
 export type LoginPayload = {
-    email: string;
-    password: string;
-  };
-  
-  export type LoginResponse = {
-    message: string;    // "SUCCESS"
-    statusCode: number; // 200
-    data: {
-      access_token: string;
-      refresh_token: string;
-      user: {
-        user_id: number;
-        username: string;
-        email: string;
-        level: number; // 0: 초기 로그인 사용자
-      };
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  message: string;    // "SUCCESS"
+  statusCode: number; // 200
+  data: {
+    access_token: string;
+    refresh_token: string;
+    user: {
+      user_id: number;
+      username: string;
+      email: string;
+      level: number; // 0: 초기 로그인 사용자
     };
   };
+};
 
 // api.ts (signup만 예시)
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
-    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(payload),
-    });
-  
-    const ct = res.headers.get("content-type") || "";
-    const isJson = ct.includes("application/json");
-  
-    // 성공 케이스
-    if (res.ok) {
-      if (isJson) return (await res.json()) as SignupResponse;
-      // 혹시 성공인데 본문이 비거나 JSON이 아니면 기본 메시지로 반환
-      return {
-        message: "SUCCESS",
-        statusCode: res.status,
-        data: { user_id: 0, username: payload.username, email: payload.email },
-      };
-    }
-  
-    // 에러 케이스: JSON/텍스트 모두 안전 처리
-    let serverMsg = "";
-    try {
-      serverMsg = isJson ? (await res.json())?.message : await res.text();
-    } catch {
-      /* 파싱 실패는 무시하고 아래에서 상태코드로 메시지 구성 */
-    }
-    throw new Error(serverMsg?.trim() || `회원가입 실패 (HTTP ${res.status})`);
+  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const ct = res.headers.get("content-type") || "";
+  const isJson = ct.includes("application/json");
+
+  // 성공 케이스
+  if (res.ok) {
+    if (isJson) return (await res.json()) as SignupResponse;
+    // 혹시 성공인데 본문이 비거나 JSON이 아니면 기본 메시지로 반환
+    return {
+      message: "SUCCESS",
+      statusCode: res.status,
+      data: { user_id: 0, username: payload.username, email: payload.email },
+    };
   }
-  
+
+  // 에러 케이스: JSON/텍스트 모두 안전 처리
+  let serverMsg = "";
+  try {
+    serverMsg = isJson ? (await res.json())?.message : await res.text();
+  } catch {
+    /* 파싱 실패는 무시하고 아래에서 상태코드로 메시지 구성 */
+  }
+  throw new Error(serverMsg?.trim() || `회원가입 실패 (HTTP ${res.status})`);
+}
+
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-  
-    const data = (await res.json()) as LoginResponse;
-  
-    if (!res.ok) {
-      throw new Error(data?.message || `로그인 실패 (HTTP ${res.status})`);
-    }
-    return data;
-  }
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-  const getAccessToken = () => localStorage.getItem("access_token");
+  const data = (await res.json()) as LoginResponse;
+
+  if (!res.ok) {
+    throw new Error(data?.message || `로그인 실패 (HTTP ${res.status})`);
+  }
+  return data;
+}
+
+const getAccessToken = () => localStorage.getItem("access_token");
 
 
 export type UpdateLevelPayload = {
@@ -198,8 +198,8 @@ export async function fetchArticleSummary(
   if (!token) throw new Error("로그인이 필요합니다. (토큰 없음)");
 
   const url = `${API_BASE_URL}/articles/${articleId}/summary` +
-  `?category_slug=${encodeURIComponent(category)}` +
-  `&reading_level=${level}`;
+    `?category_slug=${encodeURIComponent(category)}` +
+    `&reading_level=${level}`;
 
   const res = await fetch(url, {
     method: "GET",
@@ -218,19 +218,19 @@ export async function fetchArticleSummary(
     throw new Error("요약 데이터를 찾을 수 없습니다.");
   }
 
-// src/lib/api.ts
-const d = json.data;
-return {
-  articleId: d.article_id,
-  summaryId: d.summary_id,
-  summaryText: d.summary_text,
-  readingLevel: d.reading_level,
-  keywords: d.keywords,
-  articleImageUrl: d.article_image_url,       // ✅ 새 필드
-  articlePublishedAt: d.article_published_at, // ✅ 새 필드
-  articleTitle: d.article_title,
-  category, // 그대로 유지
-};
+  // src/lib/api.ts
+  const d = json.data;
+  return {
+    articleId: d.article_id,
+    summaryId: d.summary_id,
+    summaryText: d.summary_text,
+    readingLevel: d.reading_level,
+    keywords: d.keywords,
+    articleImageUrl: d.article_image_url,       // ✅ 새 필드
+    articlePublishedAt: d.article_published_at, // ✅ 새 필드
+    articleTitle: d.article_title,
+    category, // 그대로 유지
+  };
 }
 
 // 요약페이지 -> 문제페이지에서 문제 불러오는 api
@@ -310,4 +310,254 @@ export async function submitSummaryQuiz(
   }
 
   return body.data; // ✅ SummaryQuizPage에서 받는 data
+}
+
+// 🧠 복습 히스토리 아이템 타입
+export type ReviewHistoryItem = {
+  article_id: number;
+  summary_id: number;
+  quiz_id: number;
+  title: string;
+  image_url: string | null;
+  last_reviewed_at: string; // ISO 문자열
+  score: number;
+  total_questions: number;
+};
+
+// 전체 응답 타입 (필요하면)
+export type ReviewHistoryResponse = {
+  message: string;
+  statusCode: number;
+  data: {
+    items: ReviewHistoryItem[];
+  };
+};
+
+export async function getReviewHistory(): Promise<ReviewHistoryItem[]> {
+  // 1) 토큰 가져오기
+  const token = localStorage.getItem("access_token"); // 네가 로그인 때 쓰는 키 그대로
+
+  if (!token) {
+    // 아예 토큰이 없으면 바로 에러
+    throw new Error("로그인이 필요합니다. 다시 로그인해 주세요.");
+  }
+
+  // 2) Bearer 토큰을 Authorization 헤더에 넣어서 호출
+  const res = await fetch(`${API_BASE_URL}/users/me/review/history`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // 3) 응답 체크
+  if (!res.ok) {
+    console.error("[review history] status =", res.status);
+
+    if (res.status === 401) {
+      throw new Error("로그인이 만료되었어요. 다시 로그인해 주세요.");
+    }
+
+    let msg = "복습 히스토리를 불러오지 못했습니다.";
+    try {
+      const errJson = await res.json();
+      if (errJson?.message) msg = errJson.message;
+    } catch (e) {
+      // JSON 파싱 실패하면 무시하고 기본 msg 사용
+    }
+
+    throw new Error(msg);
+  }
+
+  // 4) 정상 응답 파싱
+  const json: ReviewHistoryResponse = await res.json();
+  return json.data.items;
+
+}
+
+// 📰 복습용 기사 상세 타입
+export type ArticleReviewData = {
+  article_id: number;
+  title: string;
+  image_url: string | null;
+  content: string;
+  published_at: string;
+  article_keywords: {
+    word: string;
+    translation_ko: string;
+  }[];
+  summary_id: number;
+  quiz_id: number;
+  session_id: number;
+  last_reviewed_at: string;
+};
+
+export type ArticleReviewResponse = {
+  message: string;
+  statusCode: number;
+  data: ArticleReviewData;
+};
+
+// 🧠 복습용 기사 상세 조회 API
+export async function getArticleReview(
+  articleId: number
+): Promise<ArticleReviewData> {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    throw new Error("로그인이 필요합니다. 다시 로그인해 주세요.");
+  }
+
+  const res = await fetch(`${API_BASE_URL}/articles/${articleId}/review`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    console.error("[article review] status =", res.status);
+
+    if (res.status === 401) {
+      throw new Error("로그인이 만료되었어요. 다시 로그인해 주세요.");
+    }
+
+    let msg = "복습용 기사 정보를 불러오지 못했습니다.";
+    try {
+      const errJson = await res.json();
+      if (errJson?.message) msg = errJson.message;
+    } catch (e) {}
+
+    throw new Error(msg);
+  }
+
+  const json: ArticleReviewResponse = await res.json();
+  return json.data;
+}
+
+// 📝 요약 상세 타입
+export type SummaryDetail = {
+  summary_id: number;
+  article_id: number;
+  image_url: string | null; // 또는 string
+  level: string; // "beginner" | "intermediate" | "advanced" 같은 값
+  summary_text: string;
+  title: string;
+  published_at: string;
+  keywords: {
+    word: string;
+    translation_ko: string;
+  }[];
+};
+
+export type SummaryDetailResponse = {
+  message: string;
+  statusCode: number;
+  data: SummaryDetail;
+};
+
+// 🧠 요약 상세 조회 API
+export async function getSummaryDetail(
+  summaryId: number
+): Promise<SummaryDetail> {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    throw new Error("로그인이 필요합니다. 다시 로그인해 주세요.");
+  }
+
+  const res = await fetch(`${API_BASE_URL}/summaries/${summaryId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    console.error("[summary detail] status =", res.status);
+
+    if (res.status === 401) {
+      throw new Error("로그인이 만료되었어요. 다시 로그인해 주세요.");
+    }
+
+    let msg = "요약 정보를 불러오지 못했습니다.";
+    try {
+      const errJson = await res.json();
+      if (errJson?.message) msg = errJson.message;
+    } catch (e) {}
+    throw new Error(msg);
+  }
+
+  const json: SummaryDetailResponse = await res.json();
+  return json.data;
+}
+
+// 🧪 퀴즈 세션 결과 타입들
+export type QuizSessionOption = {
+  option_id: number;
+  label: string; // "A", "B", ...
+  text: string;
+};
+
+export type QuizSessionQuestion = {
+  question_id: number;
+  question_type: string; // "vocab" | "grammar" 등
+  prompt: string;
+  options: QuizSessionOption[];
+  correct_option_id: number;
+  selected_option_id: number | null;
+  is_correct: boolean;
+  explanation: string | null;
+};
+
+export type QuizSessionResult = {
+  session_id: number;
+  quiz_id: number;
+  summary_id: number;
+  article_id: number;
+  score: number;
+  total_questions: number;
+  questions: QuizSessionQuestion[];
+};
+
+export type QuizSessionResultResponse = {
+  message: string;
+  statusCode: number;
+  data: QuizSessionResult;
+};
+
+// 🧠 퀴즈 세션 결과 조회 API
+export async function getQuizSessionResult(
+  sessionId: number
+): Promise<QuizSessionResult> {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    throw new Error("로그인이 필요합니다. 다시 로그인해 주세요.");
+  }
+
+  const res = await fetch(`${API_BASE_URL}/quiz-sessions/${sessionId}/results`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    console.error("[quiz session result] status =", res.status);
+
+    if (res.status === 401) {
+      throw new Error("로그인이 만료되었어요. 다시 로그인해 주세요.");
+    }
+
+    let msg = "퀴즈 결과를 불러오지 못했습니다.";
+    try {
+      const errJson = await res.json();
+      if (errJson?.message) msg = errJson.message;
+    } catch (e) {}
+    throw new Error(msg);
+  }
+
+  const json: QuizSessionResultResponse = await res.json();
+  return json.data;
 }

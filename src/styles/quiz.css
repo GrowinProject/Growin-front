@@ -32,3 +32,178 @@
     font-weight: 600;
   }
   
+  /* src/styles/quiz.css 안에 추가 */
+
+/* 공통 보기 박스 */
+.quiz-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  font-size: 14px;
+}
+
+.quiz-option + .quiz-option {
+  margin-top: 8px;
+}
+
+.quiz-option-main {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.quiz-option-label {
+  font-weight: 700;
+}
+
+.quiz-option-text {
+  color: #111827;
+}
+
+/* 정답 (파란색) */
+.quiz-option-correct {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* 내가 선택한 오답 (빨간색) */
+.quiz-option-wrong {
+  border-color: #f97373;
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.quiz-option-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+/* 상단 / 하단 구조도 대충 예시 */
+.quiz-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+.quiz-header {
+  margin-bottom: 20px;
+}
+
+.quiz-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.quiz-sub {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.quiz-score-box {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #f3f4ff;
+  color: #4f46e5;
+  margin-bottom: 6px;
+}
+
+.quiz-score-label {
+  font-size: 11px;
+}
+
+.quiz-score-value {
+  font-weight: 700;
+}
+
+.quiz-question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quiz-question-card {
+  padding: 14px 12px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+.quiz-q-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.quiz-q-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.quiz-q-result {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.quiz-q-result.correct {
+  background-color: #ecfdf3;
+  color: #15803d;
+}
+
+.quiz-q-result.wrong {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.quiz-q-prompt {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.quiz-explanation {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.quiz-explanation-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.quiz-explanation-text {
+  margin-top: 2px;
+  color: #4b5563;
+}
+
+.quiz-bottom {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.quiz-back-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}

@@ -11,6 +11,10 @@ import SignIn from "./pages/SignIn";
 import SummaryRead from "./pages/SummaryRead";
 import SummaryQuizPage from "./pages/SummaryQuizPage";
 import SummaryQuizResultPage from "./pages/SummaryQuizResultPage";
+import ReviewHistoryPage from "./pages/ReviewHistoryPage";
+import ArticleReviewPage from "./pages/ArticleReviewPage";
+import SummaryReviewPage from "./pages/SummaryReviewPage";
+import QuizSessionReviewPage from "./pages/QuizSessionReviewPage";
 
 function App() {
   return (
@@ -32,6 +36,19 @@ function App() {
         <Route
           path="/articles/:category/:articleId/level/:level/summaries/:summaryId/quiz/result"
           element={<SummaryQuizResultPage />}
+        />
+        <Route path="/review-history" element={<ReviewHistoryPage />} />
+        <Route
+          path="/articles/:articleId/review"
+          element={<ArticleReviewPage />}
+        />
+        <Route
+          path="/summaries/:summaryId/review"
+          element={<SummaryReviewPage />}
+        />
+        <Route
+          path="/quiz-sessions/:sessionId/results"
+          element={<QuizSessionReviewPage />}
         />
         <Route path="*" element={<Navigate to="/sign-in" replace />} />
       </Routes>

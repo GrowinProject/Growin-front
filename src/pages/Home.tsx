@@ -12,7 +12,6 @@ export default function Home() {
       const raw = localStorage.getItem("user");
       if (raw) {
         const user = JSON.parse(raw);
-        // username이 있으면 "혜주님" 형태로 반환
         if (user?.username) return `${user.username}님`;
       }
   
@@ -58,7 +57,7 @@ export default function Home() {
         title="틀린문제, 다시 보고 싶은 문제 모두"
         strong="복습 시작하기"
         emoji="📚"
-        onClick={() => nav("/review")}
+        onClick={() => nav("/review-history")}
       />
 
       {/* 키워드별 복습 리스트 */}
