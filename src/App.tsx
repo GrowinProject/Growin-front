@@ -10,6 +10,7 @@ import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import SummaryRead from "./pages/SummaryRead";
 import SummaryQuizPage from "./pages/SummaryQuizPage";
+import SummaryQuizResultPage from "./pages/SummaryQuizResultPage";
 
 function App() {
   return (
@@ -27,8 +28,12 @@ function App() {
         <Route path="/article" element={<ArticleRead />} />
         {/* <Route path="/signup-page" element={<SignupPage />} /> */}
         <Route path="/summary/:category/:articleId/level/:level" element={<SummaryRead />} />
-        <Route path="/summary/:category/:articleId/level/:level/quiz/:summaryId" element={<SummaryQuizPage />}/>
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/summary/:category/:articleId/level/:level/quiz/:summaryId" element={<SummaryQuizPage />} />
+        <Route
+          path="/articles/:category/:articleId/level/:level/summaries/:summaryId/quiz/result"
+          element={<SummaryQuizResultPage />}
+        />
+        <Route path="*" element={<Navigate to="/sign-in" replace />} />
       </Routes>
     </div>
   )

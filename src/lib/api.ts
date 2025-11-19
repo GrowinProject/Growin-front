@@ -250,3 +250,64 @@ export async function fetchQuiz(summaryId: number) {
   return res.json();
 }
 
+// 퀴즈 제출 후 정답 불러오기
+export type QuizAnswerPayloadItem = {
+  question_id: number;
+  selected_option_id: number;
+};
+
+export type QuizSubmitPayload = {
+  answers: QuizAnswerPayloadItem[];
+};
+
+export type QuizSubmitResultItem = {
+  question_id: number;
+  correct_option_id: number;
+  selected_option_id: number;
+  is_correct: boolean;
+  explanation: string;
+};
+
+export type QuizSubmitResponse = {
+  message: string;
+  statusCode: number;
+  data: {
+    session_id: number;
+    quiz_id: number;
+    score: number;
+    total_questions: number;
+    results: QuizSubmitResultItem[];
+  };
+};
+
+// ✅ 요약 퀴즈 제출 API
+export async function submitSummaryQuiz(
+  summaryId: number,
+  payload: QuizSubmitPayload
+): Promise<QuizSubmitResponse["data"]> {
+  const token = localStorage.getItem("access_token"); // ⬅ fetchQuiz와 동일하게 토큰 가져오기
+
+  const res = await fetch(
+    `${API_BASE_URL}/summaries/${summaryId}/quiz/submit`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ⬅ 여기도 토큰 붙이기
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`퀴즈 제출 실패 (HTTP ${res.status})`);
+  }
+
+  const body: QuizSubmitResponse = await res.json();
+
+  if (body.statusCode !== 200) {
+    throw new Error(body.message || "퀴즈 채점 요청 실패");
+  }
+
+  return body.data; // ✅ SummaryQuizPage에서 받는 data
+}
