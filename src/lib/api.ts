@@ -90,10 +90,38 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data;
 }
 
+// src/lib/api.ts
+
+export async function fetchMe() {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error("NO_ACCESS_TOKEN");
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  const res = await fetch(`${API_BASE_URL}/users/me`, {
+    method: "GET",
+    headers,
+  });
+
+  if (res.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+  if (!res.ok) {
+    throw new Error(`HTTP_${res.status}`);
+  }
+
+  // 백엔드에서 {"id":..., "email":..., "reading_level": ...} 이런 형태라고 가정
+  return res.json();
+}
+
 
 export type UpdateLevelPayload = {
-  user_id: number;   // ⚠️ 토큰의 사용자와 일치해야 함(백엔드가 검증)
-  level: 1 | 2 | 3;  // 1=초급, 2=중급, 3=고급
+  level: 1 | 2 | 3;
 };
 
 export type UpdateLevelResponse = {
@@ -137,8 +165,28 @@ export async function updateUserLevel(payload: UpdateLevelPayload): Promise<Upda
     const txt = await r.text().catch(() => "");
     throw new Error(txt || `HTTP_${r.status}`);
   }
-  return r.json();
-}
+  
+  const json = await r.json();
+  
+  // ✅ 응답에서 level 꺼내서 localStorage에 저장
+  // 응답 형태: { message, statusCode, data: { user_id, level } }
+  try {
+    const levelFromResponse =
+      (json as any)?.data?.level ??
+      (payload as any)?.level; // 혹시 응답에 없으면, 보낸 payload.level이라도 저장
+  
+    if (levelFromResponse != null) {
+      localStorage.setItem("reading_level", String(levelFromResponse));
+      console.log("[API] updateUserLevel → 저장된 level:", levelFromResponse);
+    } else {
+      console.warn("[API] updateUserLevel: 응답에서 level을 찾지 못함", json);
+    }
+  } catch (e) {
+    console.warn("[API] updateUserLevel: localStorage 저장 중 오류", e);
+  }
+  
+  return json;
+}  
 
 export type Keyword = { word: string; translation_ko: string };
 export type Article = {
@@ -161,9 +209,11 @@ export type RandomArticleResponse = {
   };
 };
 
-export async function fetchRandomArticle(categorySlug: string) {
+// ✅ 레벨까지 같이 받도록 변경
+export async function fetchRandomArticle(categorySlug: string, level: string) {
   const url = new URL(`${API_BASE_URL}/articles/random`);
   url.searchParams.set("category", categorySlug);
+  url.searchParams.set("level", level); // ✅ 레벨도 쿼리로 추가
 
   const token = getAccessToken();
   console.log("[fetchRandomArticle] getAccessToken() =>", token);

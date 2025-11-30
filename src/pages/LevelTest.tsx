@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEVEL_QUESTIONS } from "../data/levelQuestions";
+import { updateUserLevel } from "../lib/api";
 
 // levelQuestions.ts에 Difficulty가 있다면 타입 가져와서 써도 되고,
 // 여기서는 문자열 union 그대로 사용
@@ -69,20 +70,36 @@ export default function LevelTest() {
   function finalizeAndGo(nextAnswers: Answer[]) {
     // ✅ 점수/레벨 계산
     const { score, maxScore, percent } = computeScore(nextAnswers);
-    const level = computeLevel(percent);
-
-    // ✅ 로컬 저장 (결과 화면 및 이후 로직에서 사용)
+    const level = computeLevel(percent); // 1 | 2 | 3
+  
+    // ✅ 로컬 저장 (결과 화면용)
     const payload = {
       answers: nextAnswers,
-      result: { score, maxScore, percent, level }, // level: 1|2|3
+      result: { score, maxScore, percent, level },
     };
     try {
       localStorage.setItem("level_result", JSON.stringify(payload));
     } catch {}
-
-    // ✅ 결과 페이지로 이동 (여기서는 아직 서버 PATCH 안 함)
+  
+    // ✅ (선택 사항) 바로 여기서도 한번 저장해두기 — 백업용
+    try {
+      localStorage.setItem("reading_level", String(level));
+    } catch {}
+  
+    // ✅ 서버에 레벨 PATCH (DB users.level 업데이트 + api.ts에서 localStorage도 세팅하도록 해둔 상태)
+    updateUserLevel({ level })
+      .then((res) => {
+        console.log("[LevelTest] updateUserLevel 성공:", res);
+      })
+      .catch((err) => {
+        console.error("[LevelTest] updateUserLevel 실패:", err);
+        // 실패해도 일단 화면 전환은 계속 진행 (필요하면 여기서만 따로 처리)
+      });
+  
+    // ✅ 결과 페이지로 이동
     navigate("/level-complete");
   }
+  
 
   function handleChoice(choiceId: string) {
     setSelected(choiceId);

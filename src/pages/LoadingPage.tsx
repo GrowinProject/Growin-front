@@ -4,21 +4,27 @@ import { fetchRandomArticle } from "../lib/api";
 
 export default function LoadingPage() {
   const nav = useNavigate();
-  const loc = useLocation() as { state?: { categorySlug?: string } };
+  const loc = useLocation() as {
+    state?: {
+      categorySlug?: string;
+      level?: string;     // ← 🔥 여기가 추가되는 부분!
+    };
+  };
   const slug = loc.state?.categorySlug;
+  const level = loc.state?.level;
 
   useEffect(() => {
-    if (!slug) {
+    if (!slug || !level) {
       nav("/daily", { replace: true });
       return;
     }
 
     const timer = setTimeout(async () => {
       try {
-        const res = await fetchRandomArticle(slug);
-        // 세션 스토리지에도 백업 (새로고침 대비)
+        // slug!, level! : 여기서는 undefined 아님을 우리가 보증해줬다는 뜻
+        const res = await fetchRandomArticle(slug!, level!);
         sessionStorage.setItem("current_article", JSON.stringify(res.data));
-        nav("/article", { replace: true, state: { data: res.data } });
+        nav("/article", { replace: true, state: { data: res.data, level } });
       } catch (e: any) {
         console.error(e);
         alert("기사를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
@@ -27,7 +33,7 @@ export default function LoadingPage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [slug, nav]);
+  }, [slug, level, nav]);
 
   return (
     <div className="screen centerCol">

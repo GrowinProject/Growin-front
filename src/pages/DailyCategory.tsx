@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ✅ 이미지 import (src/pages → src/imgs)
 import politics_color from "../imgs/politics_color.png";
 import politics_gray from "../imgs/politics_gray.png";
 import economy_color from "../imgs/economy_color.png";
@@ -17,7 +16,7 @@ import science_gray from "../imgs/science_gray.png";
 
 type Cat = {
   id: string;
-  slug: string; 
+  slug: string;
   label: string;
   colorSrc: string;
   graySrc: string;
@@ -35,30 +34,41 @@ const CATEGORIES: Cat[] = [
 export default function DailyCategory() {
   const nav = useNavigate();
   const [selected, setSelected] = useState<string | null>(null);
+  const [level, setLevel] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 레벨 테스트 끝나고 updateUserLevel에서 이미 localStorage에 저장해둔 값 읽기
+    const savedLevel = localStorage.getItem("reading_level");
+    if (savedLevel) {
+      setLevel(savedLevel);
+    }
+  }, []);  
 
   const onDone = () => {
     if (!selected) return;
-    nav("/loading", { state: { categorySlug: selected } });
+  
+    const level = localStorage.getItem("reading_level");
+    if (!level) {
+      alert("레벨 정보가 없어요. 다시 로그인하거나 레벨 테스트를 진행해주세요.");
+      return;
+    }
+  
+    nav("/loading", { state: { categorySlug: selected, level } });
   };
 
   return (
     <div className="screen">
-      {/* 상단 헤더 */}
-      {/* <div className="pageHeader">
-        <button className="iconBtn" onClick={() => nav(-1)} aria-label="뒤로가기">‹</button>
-        <div className="pageTitle">오늘의 기사</div>
-        <div style={{ width: 28 }} />
-      </div> */}
-
-      {/* 타이틀 */}
       <div style={{ marginTop: 16, marginBottom: 16 }}>
         <div className="helloTitle">읽고싶은 기사의</div>
         <div className="helloTitle">
           <span className="accentBlue">카테고리</span>를 선택해주세요!
         </div>
+        {/* 디버깅용으로 현재 레벨 잠깐 보여주기 */}
+        <div style={{ marginTop: 8, fontSize: 14, color: "#777" }}>
+          현재 레벨: {level ?? "불러오는 중..."}
+        </div>
       </div>
 
-      {/* 카테고리 선택 */}
       <div className="categoryGrid">
         {CATEGORIES.map((c) => {
           const active = selected === c.id;
@@ -80,7 +90,6 @@ export default function DailyCategory() {
         })}
       </div>
 
-      {/* 하단 버튼 */}
       <div className="stickyBottom">
         <button
           className="primaryBtn"
