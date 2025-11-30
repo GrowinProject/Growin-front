@@ -28,8 +28,11 @@ export default function SummaryRead() {
                 setLoading(true);
                 setError(null);
                 const data = await fetchArticleSummary(cat, aid, lvl);
+                console.log("▶ summary data:", data);
+
                 if (!cancelled) setSummary(data);
             } catch (err: any) {
+                console.error("❌ loadSummary error:", err);
                 if (!cancelled) setError(err.message || "요약을 불러오지 못했어요.");
             } finally {
                 if (!cancelled) setLoading(false);

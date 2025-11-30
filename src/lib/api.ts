@@ -1,6 +1,11 @@
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "https://growin-back.onrender.com";
 
+export function getAccessToken(): string | null {
+  if (typeof window === "undefined") return null; // 혹시 SSR 대비용 (필수는 아님)
+  return localStorage.getItem("access_token");
+}
+
 export type SignupPayload = {
   username: string;
   email: string;
@@ -85,8 +90,6 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data;
 }
 
-const getAccessToken = () => localStorage.getItem("access_token");
-
 
 export type UpdateLevelPayload = {
   user_id: number;   // ⚠️ 토큰의 사용자와 일치해야 함(백엔드가 검증)
@@ -158,19 +161,37 @@ export type RandomArticleResponse = {
   };
 };
 
-// ✅ 카테고리별 랜덤 기사 (slug 사용: e.g. politics)
 export async function fetchRandomArticle(categorySlug: string) {
   const url = new URL(`${API_BASE_URL}/articles/random`);
   url.searchParams.set("category", categorySlug);
 
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
   const token = getAccessToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
+  console.log("[fetchRandomArticle] getAccessToken() =>", token);
+
+  if (!token) {
+    // 토큰이 아예 없으면 여기서 바로 에러 던지기
+    throw new Error("NO_ACCESS_TOKEN");
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 
   const res = await fetch(url.toString(), { method: "GET", headers });
-  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+
+  if (res.status === 401) {
+    // 백엔드에서 UNAUTHORIZED 주는 경우
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP_${res.status}`);
+  }
+
   return res.json();
 }
+
 
 export type SummaryAPIResponse = {
   message: string;
@@ -195,6 +216,8 @@ export async function fetchArticleSummary(
   level: number
 ) {
   const token = getAccessToken();
+  console.log("▶ fetchArticleSummary token:", token?.slice(0, 20), "...");
+
   if (!token) throw new Error("로그인이 필요합니다. (토큰 없음)");
 
   const url = `${API_BASE_URL}/articles/${articleId}/summary` +
@@ -426,7 +449,7 @@ export async function getArticleReview(
     try {
       const errJson = await res.json();
       if (errJson?.message) msg = errJson.message;
-    } catch (e) {}
+    } catch (e) { }
 
     throw new Error(msg);
   }
@@ -484,7 +507,7 @@ export async function getSummaryDetail(
     try {
       const errJson = await res.json();
       if (errJson?.message) msg = errJson.message;
-    } catch (e) {}
+    } catch (e) { }
     throw new Error(msg);
   }
 
@@ -554,7 +577,7 @@ export async function getQuizSessionResult(
     try {
       const errJson = await res.json();
       if (errJson?.message) msg = errJson.message;
-    } catch (e) {}
+    } catch (e) { }
     throw new Error(msg);
   }
 

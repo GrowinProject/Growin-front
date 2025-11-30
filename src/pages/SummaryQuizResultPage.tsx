@@ -94,19 +94,7 @@ export default function SummaryQuizResultPage() {
             <span>LEVEL {meta.level}</span>
           </p>
         )}
-        <div className="quizProgressBarWrap">
-          <div className="quizProgressTop">
-            {currentNumber} / {total}
-          </div>
-          <div className="quizProgressBarBg">
-            <div
-              className="quizProgressBarFill"
-              style={{
-                width: `${(currentNumber / total) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+
       </header>
 
       {/* 문제 카드 */}
@@ -150,10 +138,10 @@ export default function SummaryQuizResultPage() {
 
         {/* 해설 카드 */}
         <section className="quizExplanationCard">
-          <h3 className="quizExplanationTitle">문제 해설</h3>
-          <p className="quizExplanationText">
+          {/* <h3 className="quizExplanationTitle">문제 해설</h3> */}
+          {/* <p className="quizExplanationText">
             {currentResult.explanation}
-          </p>
+          </p> */}
         </section>
       </main>
 

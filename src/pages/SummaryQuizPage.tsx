@@ -43,46 +43,46 @@ export default function SummaryQuizPage() {
     const [submitResult, setSubmitResult] =
         useState<QuizSubmitResponse["data"] | null>(null);
 
-        useEffect(() => {
-            console.log("[QUIZ] summaryId param 👉", summaryId); // ✅ 디버깅용
-          
-            if (!summaryId) {
-              setError("summaryId가 없습니다.");
-              setLoading(false);
-              return;
-            }
-          
-            const idNum = Number(summaryId);
-            if (Number.isNaN(idNum)) {
-              setError("summaryId가 숫자가 아닙니다.");
-              setLoading(false);
-              return;
-            }
-          
-            async function load() {
-              try {
+    useEffect(() => {
+        console.log("[QUIZ] summaryId param 👉", summaryId); // ✅ 디버깅용
+
+        if (!summaryId) {
+            setError("summaryId가 없습니다.");
+            setLoading(false);
+            return;
+        }
+
+        const idNum = Number(summaryId);
+        if (Number.isNaN(idNum)) {
+            setError("summaryId가 숫자가 아닙니다.");
+            setLoading(false);
+            return;
+        }
+
+        async function load() {
+            try {
                 setLoading(true);
                 setError(null);
-          
+
                 const json = await fetchQuiz(idNum);
                 setQuiz(json.data);
-          
+
                 const initial: AnswerMap = {};
                 json.data.questions.forEach((q: QuizQuestion) => {
-                  initial[q.question_id] = null;
+                    initial[q.question_id] = null;
                 });
                 setAnswers(initial);
-              } catch (err: any) {
+            } catch (err: any) {
                 setError(err.message ?? "퀴즈를 불러오는 중 오류가 발생했습니다.");
-              } finally {
+            } finally {
                 setLoading(false);
-              }
             }
-          
-            load();
-          }, [summaryId]);
+        }
 
-          
+        load();
+    }, [summaryId]);
+
+
     const handleSelectOption = (questionId: number, optionId: number) => {
         setAnswers((prev) => ({
             ...prev,
@@ -162,19 +162,19 @@ export default function SummaryQuizPage() {
             nav(
                 `/articles/${category}/${articleId}/level/${level}/summaries/${summaryId}/quiz/result`,
                 {
-                  state: {
-                    result: data,
-                    quiz,
-                    meta: {
-                      category,
-                      articleId,
-                      level,
+                    state: {
+                        result: data,
+                        quiz,
+                        meta: {
+                            category,
+                            articleId,
+                            level,
+                        },
                     },
-                  },
                 }
-              );
-              
-// 나중에 화면에 쓰려고 저장
+            );
+
+            // 나중에 화면에 쓰려고 저장
             // setSubmitResult(data); 
             // alert(`채점 완료! 점수: ${data.score} / ${data.total_questions}`);
 
@@ -189,7 +189,7 @@ export default function SummaryQuizPage() {
         <div className="screen quizPage">
             {/* 상단 헤더 */}
             <header className="quizHeader">
-                <div className="quizBadge">
+                <div style={{ fontWeight: '700', marginBottom:10, color:'#5785D5' }}>
                     LEVEL {level}
                 </div>
                 <div className="quizHeaderText">
@@ -228,7 +228,7 @@ export default function SummaryQuizPage() {
                         <div className="quizQHeader">
                             <span className="quizQNumber">Question
                                 <span style={{ color: '#3276EB' }}> 0{idx + 1}</span></span>
-                            <span className="quizQType">{q.question_type}</span>
+                            {/* <span className="quizQType">{q.question_type}</span> */}
                         </div>
                         <div className="quizPrompt">{q.prompt}</div>
 

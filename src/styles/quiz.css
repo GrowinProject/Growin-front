@@ -207,3 +207,16 @@
   font-size: 13px;
   cursor: pointer;
 }
+
+.quizHeader {
+  flex-direction: column;
+}
+
+.quizResultScore {
+  margin-top: -20px;
+}
+
+.quizMeta{
+  margin-top: -20px;
+
+}
