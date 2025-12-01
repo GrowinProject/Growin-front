@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import politics_color from "../imgs/politics_color.png";
@@ -34,15 +34,6 @@ const CATEGORIES: Cat[] = [
 export default function DailyCategory() {
   const nav = useNavigate();
   const [selected, setSelected] = useState<string | null>(null);
-  const [level, setLevel] = useState<string | null>(null);
-
-  useEffect(() => {
-    // 레벨 테스트 끝나고 updateUserLevel에서 이미 localStorage에 저장해둔 값 읽기
-    const savedLevel = localStorage.getItem("reading_level");
-    if (savedLevel) {
-      setLevel(savedLevel);
-    }
-  }, []);  
 
   const onDone = () => {
     if (!selected) return;
@@ -62,10 +53,6 @@ export default function DailyCategory() {
         <div className="helloTitle">읽고싶은 기사의</div>
         <div className="helloTitle">
           <span className="accentBlue">카테고리</span>를 선택해주세요!
-        </div>
-        {/* 디버깅용으로 현재 레벨 잠깐 보여주기 */}
-        <div style={{ marginTop: 8, fontSize: 14, color: "#777" }}>
-          현재 레벨: {level ?? "불러오는 중..."}
         </div>
       </div>
 

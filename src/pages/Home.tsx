@@ -14,13 +14,13 @@ export default function Home() {
         const user = JSON.parse(raw);
         if (user?.username) return `${user.username}님`;
       }
-  
+
       // fallback: 이전 방식 (이메일이나 이름 따로 저장돼 있을 때)
       const name = localStorage.getItem("user_name");
       const email = localStorage.getItem("user_email");
       if (name) return `${name}님`;
       if (email) return `${email.split("@")[0]}님`;
-  
+
       return "사용자님";
     } catch {
       return "사용자님";
@@ -47,7 +47,16 @@ export default function Home() {
         title="지금 핫한 기사를 모아봐요"
         strong="하루 3분으로 기사 읽고 문제 풀기!"
         emoji="📖"
-        onClick={() => nav("/daily")} // 추후 페이지 연결
+        onClick={() => {
+          const lvl = Number(localStorage.getItem("reading_level"));
+
+          if (lvl === 1 || lvl === 3) {
+            alert("아직 이 기능은 레벨 2에서만 지원됩니다! 준비 중입니다 😊");
+            return;
+          }
+
+          nav("/daily");
+        }}
       />
 
       {/* 복습 카드 */}
@@ -67,21 +76,21 @@ export default function Home() {
           icon="📘"
           title="문법"
           desc="문법이 약한것 같다면?"
-          onClick={() => nav("/review/grammar")}
+          onClick={() => alert("준비중입니다 😊")}
         />
         <Divider />
         <ListItem
           icon="🗓️"
           title="단어"
           desc="단어만 집중적으로!"
-          onClick={() => nav("/review/vocab")}
+          onClick={() => alert("준비중입니다 😊")}
         />
         <Divider />
         <ListItem
           icon="🌀"
           title="독해"
           desc="독해력 상승을 위해"
-          onClick={() => nav("/review/reading")}
+          onClick={() => alert("준비중입니다 😊")}
         />
       </div>
 
