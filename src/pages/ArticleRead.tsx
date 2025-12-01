@@ -24,7 +24,7 @@ export default function ArticleRead() {
     loc.state?.level ?? localStorage.getItem("reading_level");
 
   useEffect(() => {
-    fetch("https://your-backend-domain.com/articles/random", {
+    fetch("${API_BASE_URL}/articles/random", {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
