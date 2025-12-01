@@ -90,33 +90,21 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data;
 }
 
-// src/lib/api.ts
-
 export async function fetchMe() {
   const token = getAccessToken();
-  if (!token) {
-    throw new Error("NO_ACCESS_TOKEN");
-  }
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
+  if (!token) throw new Error("NO_TOKEN");
 
   const res = await fetch(`${API_BASE_URL}/users/me`, {
-    method: "GET",
-    headers,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
-  if (res.status === 401) {
-    throw new Error("UNAUTHORIZED");
-  }
   if (!res.ok) {
-    throw new Error(`HTTP_${res.status}`);
+    throw new Error("ME_FETCH_FAILED");
   }
 
-  // 백엔드에서 {"id":..., "email":..., "reading_level": ...} 이런 형태라고 가정
-  return res.json();
+  return res.json(); // { id: number, ... } 라고 가정
 }
 
 
@@ -134,52 +122,58 @@ export type UpdateLevelResponse = {
   };
 };
 
-export async function updateUserLevel(payload: UpdateLevelPayload): Promise<UpdateLevelResponse> {
+export async function updateUserLevel(level: 1 | 2 | 3): Promise<UpdateLevelResponse> {
   const token = getAccessToken();
   if (!token) throw new Error("NO_TOKEN");
+
+  // 현재 유저 정보
+  const me = await fetchMe();
+
+  const payload = {
+    user_id: me.id,  // ⚠️ 실제 응답 필드명이 me.user_id면 그걸로 바꿔줘야 함
+    level,
+  };
+
+  console.log("[API] updateUserLevel payload:", payload);
 
   const r = await fetch(`${API_BASE_URL}/users/level`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // ← 공백 1칸 필수
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
 
-  // 409를 특별 처리(이미 설정됨 → 성공처럼)
-  if (r.status === 409) {
-    const j = await r.json().catch(() => ({}));
-    const e: any = new Error(j?.message || "LEVEL_ALREADY_ASSIGNED");
-    e.code = 409;
-    throw e;
-  }
+  const txt = await r.text().catch(() => "");
+
   if (!r.ok) {
-    const txt = await r.text().catch(() => "");
+    console.error("[API] updateUserLevel 실패:", r.status, txt);
     throw new Error(txt || `HTTP_${r.status}`);
   }
-  
-  const json = await r.json();
-  
-  // ✅ 응답에서 level 꺼내서 localStorage에 저장
-  // 응답 형태: { message, statusCode, data: { user_id, level } }
+
+  let json: any = {};
+  try {
+    json = JSON.parse(txt);
+  } catch {
+    json = {};
+  }
+
+  // 응답에서 level 꺼내서 localStorage에도 저장
   try {
     const levelFromResponse =
-      (json as any)?.data?.level ??
-      (payload as any)?.level; // 혹시 응답에 없으면, 보낸 payload.level이라도 저장
-  
+      json?.data?.level ?? level;
+
     if (levelFromResponse != null) {
       localStorage.setItem("reading_level", String(levelFromResponse));
       console.log("[API] updateUserLevel → 저장된 level:", levelFromResponse);
-    } else {
-      console.warn("[API] updateUserLevel: 응답에서 level을 찾지 못함", json);
     }
   } catch (e) {
     console.warn("[API] updateUserLevel: localStorage 저장 중 오류", e);
   }
-  
+
   return json;
-}  
+}
 
 export type Keyword = { word: string; translation_ko: string };
 export type Article = {

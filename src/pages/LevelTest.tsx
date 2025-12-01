@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEVEL_QUESTIONS } from "../data/levelQuestions";
-import { updateUserLevel, fetchMe } from "../lib/api";
+import { updateUserLevel } from "../lib/api";
 
 // levelQuestions.ts에 Difficulty가 있다면 타입 가져와서 써도 되고,
 // 여기서는 문자열 union 그대로 사용
@@ -68,7 +68,6 @@ export default function LevelTest() {
   }
 
   async function finalizeAndGo(nextAnswers: Answer[]) {
-    // ✅ 점수/레벨 계산
     const { score, maxScore, percent } = computeScore(nextAnswers);
     const level = computeLevel(percent); // 1 | 2 | 3
   
@@ -86,17 +85,11 @@ export default function LevelTest() {
     } catch {}
   
     try {
-      const me = await fetchMe();           // ← 서버에서 현재 유저 정보 가져오기
-      await updateUserLevel({
-        user_id: me.id,                    // ← 실제 필드명에 맞춰서: id or user_id
-        level,
-      });
+      await updateUserLevel(level);
       console.log("[LevelTest] updateUserLevel 성공");
     } catch (err) {
       console.error("[LevelTest] updateUserLevel 실패:", err);
-      // 실패해도 화면은 그냥 넘어가고 싶으면 여기서만 로그 찍고 끝내면 됨
     }
-  
     // ✅ 결과 페이지로 이동
     navigate("/level-complete");
   }
