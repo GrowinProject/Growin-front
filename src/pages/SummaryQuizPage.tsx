@@ -40,7 +40,7 @@ export default function SummaryQuizPage() {
     const [error, setError] = useState<string | null>(null);
 
     // ✅ 채점 결과 저장용
-    const [submitResult, setSubmitResult] =
+    const [submitResult] =
         useState<QuizSubmitResponse["data"] | null>(null);
 
     useEffect(() => {

@@ -8,19 +8,6 @@ import {
 import KeywordHighlighter from "../components/KeywordHighlighter";
 import "@/mobile.css";
 
-function levelLabel(level: string) {
-    switch (level) {
-        case "beginner":
-            return "Beginner (초급)";
-        case "intermediate":
-            return "Intermediate (중급)";
-        case "advanced":
-            return "Advanced (고급)";
-        default:
-            return level;
-    }
-}
-
 export default function SummaryReviewPage() {
     const nav = useNavigate();
     const { summaryId } = useParams<{ summaryId: string }>();
@@ -102,7 +89,7 @@ export default function SummaryReviewPage() {
         );
     }
 
-    const { summary_text, level, keywords, image_url, title, published_at } = data;
+    const { summary_text, keywords, image_url, title, published_at } = data;
 
     // 🔍 하이라이터가 기대하는 형태로 키워드 변환
     const hiKeywords = keywords.map((k) => ({

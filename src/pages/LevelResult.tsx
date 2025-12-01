@@ -114,7 +114,7 @@ export default function LevelResult() {
     (async () => {
       try {
         setSaving(true);
-        await updateUserLevel({ user_id: user.user_id, level: data.result.level });
+        await updateUserLevel({ level: data.result.level });
         console.log("[LR] PATCH ok");
         setSavedMsg("레벨 저장 완료!");
       } catch (e: any) {
