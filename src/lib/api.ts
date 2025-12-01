@@ -121,6 +121,7 @@ export async function fetchMe() {
 
 
 export type UpdateLevelPayload = {
+  user_id: number;
   level: 1 | 2 | 3;
 };
 
@@ -135,14 +136,6 @@ export type UpdateLevelResponse = {
 
 export async function updateUserLevel(payload: UpdateLevelPayload): Promise<UpdateLevelResponse> {
   const token = getAccessToken();
-  // 콘솔 확인용
-  console.log("[API] updateUserLevel called:", {
-    url: `${API_BASE_URL}/users/level`,
-    payload,
-    hasToken: !!token,
-    tokenPreview: token?.slice(0, 12) + "...",
-  }); // 👈 호출 여부/URL/토큰 유무 확인
-
   if (!token) throw new Error("NO_TOKEN");
 
   const r = await fetch(`${API_BASE_URL}/users/level`, {

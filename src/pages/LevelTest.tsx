@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEVEL_QUESTIONS } from "../data/levelQuestions";
-import { updateUserLevel } from "../lib/api";
+import { updateUserLevel, fetchMe } from "../lib/api";
 
 // levelQuestions.ts에 Difficulty가 있다면 타입 가져와서 써도 되고,
 // 여기서는 문자열 union 그대로 사용
@@ -67,7 +67,7 @@ export default function LevelTest() {
     return next; // ✅ 다음 단계에서 즉시 계산에 활용하려고 반환
   }
 
-  function finalizeAndGo(nextAnswers: Answer[]) {
+  async function finalizeAndGo(nextAnswers: Answer[]) {
     // ✅ 점수/레벨 계산
     const { score, maxScore, percent } = computeScore(nextAnswers);
     const level = computeLevel(percent); // 1 | 2 | 3
@@ -79,22 +79,23 @@ export default function LevelTest() {
     };
     try {
       localStorage.setItem("level_result", JSON.stringify(payload));
+      localStorage.setItem("reading_level", String(level));
     } catch {}
-  
-    // ✅ (선택 사항) 바로 여기서도 한번 저장해두기 — 백업용
-    try {
+      try {
       localStorage.setItem("reading_level", String(level));
     } catch {}
   
-    // ✅ 서버에 레벨 PATCH (DB users.level 업데이트 + api.ts에서 localStorage도 세팅하도록 해둔 상태)
-    updateUserLevel({ level })
-      .then((res) => {
-        console.log("[LevelTest] updateUserLevel 성공:", res);
-      })
-      .catch((err) => {
-        console.error("[LevelTest] updateUserLevel 실패:", err);
-        // 실패해도 일단 화면 전환은 계속 진행 (필요하면 여기서만 따로 처리)
+    try {
+      const me = await fetchMe();           // ← 서버에서 현재 유저 정보 가져오기
+      await updateUserLevel({
+        user_id: me.id,                    // ← 실제 필드명에 맞춰서: id or user_id
+        level,
       });
+      console.log("[LevelTest] updateUserLevel 성공");
+    } catch (err) {
+      console.error("[LevelTest] updateUserLevel 실패:", err);
+      // 실패해도 화면은 그냥 넘어가고 싶으면 여기서만 로그 찍고 끝내면 됨
+    }
   
     // ✅ 결과 페이지로 이동
     navigate("/level-complete");
