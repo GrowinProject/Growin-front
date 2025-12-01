@@ -107,6 +107,26 @@ export async function fetchMe() {
   return res.json(); // { id: number, ... } 라고 가정
 }
 
+export function getUserIdFromToken(): number | null {
+  const token = getAccessToken();
+  if (!token) return null;
+
+  try {
+    const [, payloadBase64] = token.split(".");
+    const payloadJson = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(payloadJson);
+
+    const sub = payload.sub ?? payload.user_id ?? payload.id;
+    if (sub == null) return null;
+
+    const n = Number(sub);
+    return Number.isNaN(n) ? null : n;
+  } catch (e) {
+    console.warn("[API] getUserIdFromToken 실패:", e);
+    return null;
+  }
+}
+
 
 export type UpdateLevelPayload = {
   user_id: number;
@@ -122,17 +142,11 @@ export type UpdateLevelResponse = {
   };
 };
 
-export async function updateUserLevel(level: 1 | 2 | 3): Promise<UpdateLevelResponse> {
+export async function updateUserLevel(
+  payload: UpdateLevelPayload
+): Promise<UpdateLevelResponse> {
   const token = getAccessToken();
   if (!token) throw new Error("NO_TOKEN");
-
-  // 현재 유저 정보
-  const me = await fetchMe();
-
-  const payload = {
-    user_id: me.id,  // ⚠️ 실제 응답 필드명이 me.user_id면 그걸로 바꿔줘야 함
-    level,
-  };
 
   console.log("[API] updateUserLevel payload:", payload);
 
@@ -142,7 +156,7 @@ export async function updateUserLevel(level: 1 | 2 | 3): Promise<UpdateLevelResp
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payload),   // { user_id, level }
   });
 
   const txt = await r.text().catch(() => "");
@@ -152,17 +166,12 @@ export async function updateUserLevel(level: 1 | 2 | 3): Promise<UpdateLevelResp
     throw new Error(txt || `HTTP_${r.status}`);
   }
 
-  let json: any = {};
-  try {
-    json = JSON.parse(txt);
-  } catch {
-    json = {};
-  }
+  const json = txt ? JSON.parse(txt) : {};
 
-  // 응답에서 level 꺼내서 localStorage에도 저장
+  // 응답에 level 있으면 localStorage 업데이트
   try {
     const levelFromResponse =
-      json?.data?.level ?? level;
+      json?.data?.level ?? payload.level;
 
     if (levelFromResponse != null) {
       localStorage.setItem("reading_level", String(levelFromResponse));

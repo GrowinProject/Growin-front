@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEVEL_QUESTIONS } from "../data/levelQuestions";
-import { updateUserLevel } from "../lib/api";
+import { updateUserLevel, getUserIdFromToken } from "../lib/api";
 
 // levelQuestions.ts에 Difficulty가 있다면 타입 가져와서 써도 되고,
 // 여기서는 문자열 union 그대로 사용
@@ -71,7 +71,6 @@ export default function LevelTest() {
     const { score, maxScore, percent } = computeScore(nextAnswers);
     const level = computeLevel(percent); // 1 | 2 | 3
   
-    // ✅ 로컬 저장 (결과 화면용)
     const payload = {
       answers: nextAnswers,
       result: { score, maxScore, percent, level },
@@ -81,15 +80,23 @@ export default function LevelTest() {
       localStorage.setItem("reading_level", String(level));
     } catch {}
       try {
-      localStorage.setItem("reading_level", String(level));
     } catch {}
   
     try {
-      await updateUserLevel(level);
-      console.log("[LevelTest] updateUserLevel 성공");
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        console.error("[LevelTest] userId 없음 → 레벨 저장 스킵 (로그인 상태 확인 필요)");
+      } else {
+        await updateUserLevel({
+          user_id: userId,
+          level,
+        });
+        console.log("[LevelTest] updateUserLevel 성공");
+      }
     } catch (err) {
       console.error("[LevelTest] updateUserLevel 실패:", err);
     }
+    
     // ✅ 결과 페이지로 이동
     navigate("/level-complete");
   }
