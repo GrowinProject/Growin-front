@@ -259,7 +259,6 @@ export type SummaryAPIResponse = {
   };
 };
 
-
 export async function fetchArticleSummary(
   category: string,
   articleId: number,

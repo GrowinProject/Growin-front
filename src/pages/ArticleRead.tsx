@@ -12,11 +12,16 @@ type StateShape = {
     category: Category;
     keywords: ApiKeyword[];
   };
+  level?: string; // 🔥 추가
 };
 
 export default function ArticleRead() {
-  const [articleData, setArticleData] = useState<any>(null);
-  const userLevel = 1;
+  const nav = useNavigate();
+  const loc = useLocation() as { state?: StateShape };
+  
+  // 여기서 바로 레벨 가져오기
+  const userLevel =
+    loc.state?.level ?? localStorage.getItem("reading_level");
 
   useEffect(() => {
     fetch("https://your-backend-domain.com/articles/random", {
@@ -32,13 +37,9 @@ export default function ArticleRead() {
         console.log("🕒 저장 시간(created_at):", json.data.article.created_at);
         console.log("📂 카테고리:", json.data.category);
         console.log("🔑 키워드 목록:", json.data.keywords);
-        setArticleData(json.data);
       })
       .catch((err) => console.error("❌ 기사 로드 실패:", err));
   }, []);
-
-  const nav = useNavigate();
-  const loc = useLocation() as { state?: StateShape };
 
   // 1) state 우선, 없으면 세션에서 복구
   const data = useMemo(() => {
@@ -169,6 +170,11 @@ export default function ArticleRead() {
           className="primaryBtn"
           onClick={() => {
             if (!category || !article) return;
+            const level = userLevel ?? localStorage.getItem("reading_level");
+            if (!level) {
+              alert("레벨 정보가 없어요. 다시 로그인하거나 레벨 테스트를 진행해주세요.");
+              return;
+            }
             nav(`/summary/${category.slug}/${article.id}/level/${userLevel}`);
           }}
         >
